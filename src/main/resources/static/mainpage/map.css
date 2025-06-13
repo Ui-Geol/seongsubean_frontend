@@ -1,0 +1,200 @@
+@charset "UTF-8";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 1) 뷰포트 전체를 사용하기 위해 html/body 높이 지정 */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* common.css */
+
+.container {
+  max-width: 1200px; /* 전체 콘텐츠 최대 너비 */
+  width: 100%; /* 부모 폭을 가득 채우되, max-width 이상으로는 늘어나지 않음 */
+  margin: 0 auto; /* 좌우 중앙 정렬 */
+  padding: 0 16px; /* 좌우 여백 (모바일 대응) */
+  box-sizing: border-box;
+}
+
+/* 2) 페이지 전체를 세로 방향 Flex 컨테이너로 */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* 뷰포트 높이만큼 확보 */
+}
+
+/* 3) 콘텐츠 영역이 푸터를 밀어내며 남은 공간 모두 차지 */
+.content-wrapper {
+  flex: 1; /* 헤더+푸터 높이를 제외한 나머지 전부 */
+  position: relative;
+}
+
+#map {
+  position: relative;
+  width: 100%;
+  max-width: 1248px;
+  height: 500px;
+  margin: 10px auto 0;
+}
+
+
+/* 검색창 (우상단) 스타일 */
+
+#searchBox {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 250px;
+  z-index: 1000;
+}
+
+/* 카테고리 아이콘 목록 (우측) 스타일 */
+#filterIcons {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  z-index: 1000;
+}
+.filter-icon-img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+}
+#filterIcons button {
+  padding: 6px;
+  background-color: #ffffff;
+  border: none;
+  box-shadow: none;
+}
+
+/* 왕관 아이콘 (좌상단) 스타일 */
+
+#crownBtn {
+  background-color: #ffffff !important;
+  border: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  border-radius: 8px;
+}
+
+#crownBtn img {
+  width: 60px;
+  height: 60px;
+}
+
+.section-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4b2e1f;  /* 진한 브라운 색 */
+  text-align: left;
+  margin: 10px 0 10px 0;
+}
+/* 2) 카드 뷰 컨테이너 */
+
+#cards-wrapper {
+  display: flex;            /* 기존 flex-wrap 제거 */
+  flex-direction: column;   /* 행을 세로로 쌓음 */
+  gap: 12px;                /* .card-row 간 간격 */
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: 16px;
+  width: 100%;
+  max-width: 1200px;
+  background: #fff;
+}
+
+.card-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;    /* 중요한 부분: 행 전체 너비 고정 */
+  margin-bottom: 0; /* gap 으로 간격 처리 */
+}
+
+.card {
+  flex: 1;
+  max-width: calc((100% - 3 * 12px) / 4); /* 한 줄에 4장 */
+  background: #fafafa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.card .info {
+  padding: 8px;
+  flex: 1;
+}
+
+.card .info h4 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+}
+
+.card .info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* ─── Card Section Styling ─── */
+
+/* ① Make the container the positioning context */
+#card-section {
+  position: relative;
+  /* leave room at the bottom so cards don’t cover the button */
+  padding-bottom: 120px;
+}
+
+
+#load-more {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  z-index: 1000;
+  /* 원하는 스타일을 추가로 지정해 눈에 띄게 할 수도 있습니다 */
+  background-color: #A55C19;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+
+#cafe-registration {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  padding: 3px 10px;
+  background: #ffffff;
+  border: 2px solid #A55C19;
+  color: #A55C19;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 10;
+  margin: 0;
+}
+
+.card:hover {
+  transform: translateY(-2px); /* 호버 시 살짝 뜨는 효과 */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); /* 더 깊은 그림자 */
+}
