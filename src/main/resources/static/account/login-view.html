@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Seongsu Bean - 로그인</title>
+    <link rel="stylesheet" href="/account/login-view.css">
+</head>
+<body>
+
+<div class="login-wrapper" style="background-image: url('/images/account/background.png');">
+    <div class="outer-box">
+        <div class="login-box">
+            <img src="/images/common/logo.png" alt="Seongsu Bean Logo" class="logo">
+            <h2>LOGIN</h2>
+
+            <!-- 로그인 form 없이 JS로 처리 -->
+            <div class="login-form">
+                <input type="email" id="email" placeholder="이메일" required>
+                <input type="password" id="password" placeholder="비밀번호" required>
+                <div id="login-error" class="form-error" style="display: none;">
+                    이메일 또는 비밀번호가 틀렸습니다.
+                </div>
+                <button id="login-btn" class="btn btn-login">로그인</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- 회원가입 이동 -->
+            <a href="/account/join.html">
+                <button class="btn btn-signup">회원가입</button>
+            </a>
+
+            <!-- SNS 로그인 -->
+            <div class="sns-section">
+                <div class="sns-divider">
+                    <div class="line"></div>
+                    <span>SNS LOGIN</span>
+                    <div class="line"></div>
+                </div>
+                <div class="sns-icons">
+                    <a href="/oauth2/authorization/google">
+                        <img src="/images/account/googlelogo.png" alt="Google Login">
+                    </a>
+                    <a href="/oauth2/authorization/kakao">
+                        <img src="/images/account/kakaologo.png" alt="Kakao Login">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">©Designed by SeongsuBean</div>
+
+<!-- 회원가입 또는 로그인 실패 메시지 -->
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('joinSuccess') === 'true') {
+        alert("회원가입이 완료되었습니다!");
+    }
+    if (urlParams.get('error') === 'true') {
+        document.querySelector('#login-error').style.display = 'block';
+    }
+</script>
+
+<!-- ✅ 로그인 처리 JS: 반드시 module로 불러오기 -->
+<script type="module" src="/account/login-view.js"></script>
+
+</body>
+</html>

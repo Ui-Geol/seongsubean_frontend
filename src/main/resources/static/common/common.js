@@ -1,5 +1,5 @@
 const common = axios.create({
-    baseURL: 'http://localhost:8881',
+    baseURL: 'http://127.0.0.1:8881',
     headers: {
         'Content-Type': 'application/json'
     }
@@ -13,13 +13,13 @@ export function loadLayout() {
             document.getElementById('header-container').innerHTML = res.data;
 
             // 로그인 상태 확인 대신 하드코딩 (비로그인 상태라고 가정)
-            const loginArea = document.getElementById('login-area');
-            if (loginArea) {
-                loginArea.innerHTML = `<a href="/account/login.html">로그인</a>`;
-            }
+            // const loginArea = document.getElementById('login-area');
+            // if (loginArea) {
+            //     loginArea.innerHTML = `<a href="/account/login.html">로그인</a>`;
+            // }
 
             // 백엔드 붙인 뒤에는 아래처럼 다시 바꾸면 됨
-            /*
+
             return common.get('/board/freeboards/api/auth/email')
               .then(res => {
                 if (res.data.success) {
@@ -31,7 +31,7 @@ export function loadLayout() {
                   loginArea.innerHTML = `<a href="/account/login.html">로그인</a>`;
                 }
               });
-            */
+
         })
         .catch(err => {
             console.error('[layout] header 삽입 실패:', err);
