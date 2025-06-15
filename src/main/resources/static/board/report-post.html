@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+    <title>제보게시글 작성 - SeongsuBean</title>
+    <link rel="stylesheet" href="/board/post.css" />
+    <link rel="stylesheet" href="/common/header.css">
+    <link rel="stylesheet" href="/common/footer.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+</head>
+<body>
+<div id="header-container"></div>
+<div class="main-container">
+    <h1 class="page-title">게시글 쓰기</h1>
+    <form id="report-form" enctype="multipart/form-data">
+        <div class="mb-4">
+            <input type="text" id="title" name="title" class="form-control" placeholder="제목을 입력하세요">
+        </div>
+        <div class="mb-4">
+            <div id="editor" style="height: 500px;"></div>
+            <input type="hidden" name="content" id="editor-contents">
+        </div>
+        <input type="hidden" name="email" id="email" value="taylor1213@gmail.com" />
+        <div class="mb-4">
+            <input type="file" name="images" id="images" multiple accept="image/*">
+            <p class="img-limit-msg" style="color: gray; font-size: 14px;">이미지는 최대 5개까지 업로드할 수 있습니다.</p>
+        </div>
+        <div class="action-buttons">
+            <button type="button" class="btn-cancel" id="cancel-btn">취소</button>
+            <button type="submit" class="btn-submit">게시하기</button>
+        </div>
+    </form>
+</div>
+<div id="footer-container"></div>
+<script type="module" src="/board/report-post.js"></script>
+</body>
+</html>
