@@ -48,19 +48,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const imageContainer = document.getElementById('image-container');
         imageContainer.innerHTML = '';
-        (data.images || []).forEach(imgName => {
-            const imgTag = document.createElement('img');
-            imgTag.src = imgName.startsWith('/')
-                ? imgName
-                : `/images/upload/${data.email}/${imgName}`;
-            imgTag.classList.add('post-image');
-            imgTag.alt = '게시글 이미지';
-            if (imgName === 'default.png') imgTag.style.display = 'none';
-            imageContainer.appendChild(imgTag);
-        });
+
+        for (const imgName of (data.images || [])) {
+            if (imgName === 'default.png') continue;
+            try {
+                const imagePath = `http://127.0.0.1:8881/api/common${imgName.startsWith('/') ? '' : '/'}${imgName}`;
+                const imageRes = await axios.get(imagePath, { responseType: 'blob' });
+                const imageUrl = URL.createObjectURL(imageRes.data);
+
+                const imgTag = document.createElement('img');
+                imgTag.src = imageUrl;
+                imgTag.classList.add('post-image');
+                imgTag.alt = '게시글 이미지';
+                imageContainer.appendChild(imgTag);
+            } catch (err) {
+                console.warn(`이미지 로딩 실패: ${imgName}`, err);
+            }
+        }
 
         const avatar = document.getElementById('author-avatar');
-        avatar.innerHTML = `<img src="${data.profileImage || '/images/board/SampleProfile.png'}" class="avatar-img">`;
+        let profileImageUrl = 'http://127.0.0.1:8881/images/board/SampleProfile.png';
+
+        if (data.profileImage) {
+            try {
+                const imageRes = await axios.get(`http://127.0.0.1:8881/api/common${data.profileImage.startsWith('/') ? '' : '/'}${data.profileImage}`, {
+                    responseType: 'blob'
+                });
+                profileImageUrl = URL.createObjectURL(imageRes.data);
+            } catch (err) {
+                console.warn('작성자 프로필 이미지 로딩 실패:', err);
+            }
+        }
+
+        avatar.innerHTML = `<img src="${profileImageUrl}" class="avatar-img">`;
+
     } catch (err) {
         console.error("불러오기 실패:", err);
         alert("게시글을 불러오는 데 실패했습니다.");
@@ -111,7 +132,7 @@ async function loadComments() {
             item.className = "comment-item";
             item.innerHTML = `
               <div class="comment-avatar">
-                <img src="${comment.profileImage || '/images/board/SampleProfile.png'}" class="avatar-img">
+                <img src="${comment.profileImage || 'http://127.0.0.1:8881/images/board/SampleProfile.png'}" class="avatar-img">
               </div>
               <div class="comment-content">
                 <div class="comment-header">
