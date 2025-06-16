@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/common}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <title layout:fragment="title">Seongsu Bean - 내가 쓴 글</title>
+  <link layout:fragment="styles" rel="stylesheet" th:href="@{/css/account/my-post.css}"/>
+</head>
+<body>
+<!-- 메인 콘텐츠 -->
+<div layout:fragment="content">
+  <main class="main-content">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h1 class="page-title" th:text="|내가 쓴 글 총 ${totalCount}개|"></h1>
+          <div class="posts-table">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                <tr>
+                  <th style="width: 15%;">종류</th>
+                  <th style="width: 60%;">제목</th>
+                  <th style="width: 25%;">날짜</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="post : ${posts}">
+                  <td th:text="${post.boardType}">종류</td>
+                  <td>
+                    <span th:switch="${post.boardType}">
+                    <a th:case="'자유'" th:href="@{'/free/detail/' + ${post.boardId}}" th:text="${post.title}"></a>
+                    <a th:case="'제보'" th:href="@{'/report/detail/' + ${post.boardId}}" th:text="${post.title}"></a>
+                    </span>
+                  </td>
+                  <td th:text="${#dates.format(post['created_date'], 'yyyy-MM-dd')}"></td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- 페이지네이션 -->
+          <div class="pagination-container text-center">
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                  <a class="page-link" th:href="@{/account/myPost(page=${currentPage - 1})}">&laquo;</a>
+                </li>
+
+                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                  <a class="page-link" th:href="@{/account/myPost(page=${i})}" th:text="${i}"></a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                  <a class="page-link" th:href="@{/account/myPost(page=${currentPage + 1})}">&raquo;</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
