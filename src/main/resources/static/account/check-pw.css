@@ -6,14 +6,7 @@ body {
 
 .logo-section {
   text-align: center;
-  position: relative;
-  display: inline-block;
   width: 100%;
-}
-
-.logo-container {
-  position: relative;
-  display: inline-block;
 }
 
 .logo-image {
@@ -32,6 +25,7 @@ body {
   margin: 0 auto;
   min-height: 400px;
 }
+
 .profile-img {
   border: 2px solid #ccc;
   transition: transform 0.2s ease;
@@ -40,16 +34,12 @@ body {
 .profile-img:hover {
   transform: scale(1.05);
 }
+
 .profile-section {
   text-align: center;
   margin-bottom: 2rem;
 }
-.username {
-  color: #4A4A4A;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-}
+
 .page-title {
   color: #4A4A4A;
   font-size: 1.8rem;

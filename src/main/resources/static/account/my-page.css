@@ -9,7 +9,7 @@ body {
   margin-bottom: 2rem;
 }
 
-.logo-image{
+.logo-image {
   width: 120px;
 }
 
@@ -28,34 +28,6 @@ body {
   margin-bottom: 2rem;
 }
 
-.profile-icon {
-  width: 80px;
-  height: 80px;
-  background: #8B4513;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-  position: relative;
-}
-
-.profile-icon i {
-  color: #D2691E;
-  font-size: 2.5rem;
-}
-
-.profile-icon::after {
-  content: '';
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 20px;
-  height: 20px;
-  background: #8B4513;
-  border-radius: 3px;
-  border: 2px solid #D2691E;
-}
 .profile-img {
   border: 2px solid #ccc;
   transition: transform 0.2s ease;
@@ -64,6 +36,7 @@ body {
 .profile-img:hover {
   transform: scale(1.05);
 }
+
 .username {
   color: #4A4A4A;
   font-size: 1.5rem;
@@ -108,26 +81,9 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.coffee-decoration {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  color: #8B4513;
-  font-size: 1.5rem;
-  opacity: 0.3;
-}
-
 @media (max-width: 576px) {
   .main-card {
     margin: 1rem;
     padding: 1.5rem;
-  }
-
-  .logo-text {
-    font-size: 1.5rem;
-  }
-
-  .logo-subtitle {
-    font-size: 1.8rem;
   }
 }
