@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+    <title>자유게시글 작성 - SeongsuBean</title>
+    <link rel="stylesheet" href="/board/post.css" />
+    <link rel="stylesheet" href="/common/header.css">
+    <link rel="stylesheet" href="/common/footer.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+</head>
+<body>
+<div id="header-container"></div>
+<div class="main-container">
+    <h1 class="page-title">게시글 쓰기</h1>
+    <form id="free-form" method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+            <select id="head-word" name="headWord" class="form-select" style="width: 150px;">
+                <option selected disabled>머릿말 선택</option>
+                <option value="잡담">자유::잡담</option>
+                <option value="리뷰">자유::리뷰</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <input type="text" id="title" name="title" class="form-control" placeholder="제목을 입력하세요">
+        </div>
+        <div class="mb-4">
+            <div id="editor" style="height: 500px;"></div>
+            <input type="hidden" name="content" id="editor-contents">
+        </div>
+        <div class="mb-4">
+            <label for="images">이미지 업로드 (최대 5개):</label>
+            <input type="file" id="images" name="images" accept="image/*" multiple>
+        </div>
+        <div class="action-buttons">
+            <button type="button" id="cancel-btn" class="btn-cancel">취소</button>
+            <button type="submit" class="btn-submit">게시하기</button>
+        </div>
+    </form>
+</div>
+<div id="footer-container"></div>
+<script type="module" src="/board/free-post.js"></script>
+</body>
+</html>
