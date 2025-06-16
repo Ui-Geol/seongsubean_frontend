@@ -10,12 +10,29 @@
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: wrap; /* 반응형 대응 */
 }
 
+
 .footer-logo-img {
-  max-width: 100%;
+  width: 120px;
   height: auto;
+}
+
+.footer-logo {
+  flex-shrink: 0;
+}
+
+.footer-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-row {
+  margin-bottom: 6px;
 }
 
 .footer-brand {
@@ -28,6 +45,18 @@
   font-weight: bold;
   margin-bottom: 8px;
   color: #555;
+}
+
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .detail-row {

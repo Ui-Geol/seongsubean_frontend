@@ -1,25 +1,54 @@
-<header>
-  <div class="container mb-4">
-    <nav class="navbar navbar-expand-lg navbar-custom">
-      <div class="container-fluid justify-content-between align-items-center">
-
-        <!-- 왼쪽: 로고 + 메뉴 -->
-        <div class="d-flex align-items-center gap-4">
+<header class="header-fragment">
+  <div class="container">
+    <nav class="navbar navbar-custom">
+      <div class="header-inner">
+        <!-- 왼쪽: 로고 -->
+        <div class="header-left">
           <a class="navbar-brand" href="/">
             <img src="/images/common/logo.png" alt="Seongsu Bean Logo" class="logo-icon"/>
             <img src="/images/common/typoLogo.png" alt="Seongsu Bean Typo Logo" class="logo-text"/>
-          </a>
+          </a></div>
 
-          <ul class="navbar-nav flex-row">
-            <li class="nav-item me-1"><a class="nav-link" href="/free-list.html">자유</a></li>
-            <li class="nav-item"><a class="nav-link" href="/report-list.html">제보</a></li>
-          </ul>
-        </div>
 
-        <!-- 로그인 상태에 따라 JS로 제어 예정 -->
-        <div class="collapse navbar-collapse justify-content-end" id="mainNavbar">
-          <div id="login-area" class="d-flex gap-2">
-            <!-- 여기에 JS로 버튼 삽입 -->
+
+        <!-- 가운데: 메뉴 -->
+        <ul class="navbar-nav header-center">
+          <li class="nav-item">
+            <a class="nav-link" href="/free-list">자유</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/report-list">제보</a>
+          </li>
+        </ul>
+        <!-- 토글 버튼 (반응형) -->
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+
+        <!-- 오른쪽: 로그인 / 로그아웃 -->
+        <div class="header-right">
+          <!-- 로그인 상태 -->
+          <div class="authenticated d-flex gap-2">
+            <form action="/account/my-page.html" method="get">
+              <button type="submit" class="btn-login">마이페이지</button>
+            </form>
+            <form action="/account/logout" method="post">
+              <button type="submit" class="btn-login">로그아웃</button>
+            </form>
+          </div>
+
+          <!-- 비로그인 상태 -->
+          <div class="unauthenticated">
+            <a href="/account/login-view.html" class="btn-login">로그인</a>
           </div>
         </div>
 

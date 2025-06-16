@@ -20,7 +20,7 @@ export function loadLayout() {
 
             // 백엔드 붙인 뒤에는 아래처럼 다시 바꾸면 됨
 
-            return common.get('/board/freeboards/api/auth/email')
+            return common.get('/')
               .then(res => {
                 if (res.data.success) {
                   loginArea.innerHTML = `
