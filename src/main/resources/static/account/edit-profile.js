@@ -1,57 +1,84 @@
-const validationState={
-  passwordMatch: false,
-  nicknameValid: false
+const validationState = {
+  nicknameValid: false,
+  passwordMatch: false
 };
 
-function checkNickname(){
-  const feedback = document.getElementById("nickname-feedback");
-  const nickname = document.getElementById("nickname").value.trim();
-  if(!nickname){
+document.addEventListener("DOMContentLoaded", () =>{
+  let userEmail = document.getElementById("email");
+  let userNickname = document.getElementById("nickname");
+
+  const passwordRow = document.getElementById("password").closest(".form-row");
+  const confirmRow = document.getElementById("password-confirm").closest(".form-row");
+
+  const token = localStorage.getItem("auth");
+  axios.get("http://192.168.0.28:8881/api/account/editProfile",{
+    headers : { Authorization: `Bearer ${token}`}
+  })
+  .then(res =>{
+    const { email, nickName, oauth } = res.data;
+    userEmail.placeholder = email;
+    userNickname.placeholder = nickName;
+    if(oauth){
+      passwordRow.style.display = "none";
+      confirmRow.style.display = "none";
+    }
+  })
+  .catch(err =>{
+    alert(err);
+  });
+});
+
+// 닉네임 중복 체크
+function checkNickname() {
+  const nicknameInput = document.getElementById('nickname');
+  const feedback = document.getElementById('nickname-feedback');
+  const nickname = nicknameInput.value.trim();
+
+  if (!nickname) {
+    feedback.textContent = '';
     validationState.nicknameValid = false;
-    feedback.textContent = "";
     return;
   }
 
-  fetch(`/api/account/checkNickname?nickname=${encodeURIComponent(nickname)}`)
-  .then(res => {
-    if (!res.ok) throw new Error("서버 응답 오류");
-    return res.json();
+  axios.post("http://192.168.0.28:8881/api/account/checkNickname", {
+    nickName: nickname
   })
-  .then(data =>{
-    if(data.exists){
-      feedback.textContent= "이미 사용 중인 닉네임입니다.";
+  .then(res => {
+    if (res.data.result) {
+      feedback.textContent = "이미 사용 중인 닉네임입니다.";
       validationState.nicknameValid = false;
-    } else{
+    } else {
       feedback.textContent = "";
       validationState.nicknameValid = true;
     }
   })
-  .catch(() =>{
+  .catch(() => {
     feedback.textContent = "오류가 발생했습니다.";
     validationState.nicknameValid = false;
   });
 }
 
-function checkPassword(){
-  const password = document.getElementById("password").value;
-  const confirm = document.getElementById("passwordConfirm").value;
-  const feedback = document.getElementById("password-feedback");
+// 비밀번호 일치 확인
+function checkPasswordMatch() {
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('password-confirm').value;
+  const feedback = document.getElementById('password-feedback');
 
-  if(password && confirm && password !== confirm){
+  if (password && confirm && password !== confirm) {
     feedback.textContent = "비밀번호가 일치하지 않습니다.";
     validationState.passwordMatch = false;
-  }else{
+  } else {
     feedback.textContent = "";
     validationState.passwordMatch = true;
   }
 }
 
-function checkEmpty(event){
+function checkEmpty(event) {
   const password = document.getElementById("password").value.trim();
-  const confirm = document.getElementById("passwordConfirm").value.trim();
+  const confirm = document.getElementById("password-confirm").value.trim();
   const nickname = document.getElementById("nickname").value.trim();
 
-  if(!password && !confirm && !nickname){
+  if (!password && !confirm && !nickname) {
     alert("수정을 원하는 정보를 입력해주세요.");
     event.preventDefault();
     return;
@@ -68,38 +95,50 @@ function checkEmpty(event){
     event.preventDefault();
     return;
   }
+
+  const payload = {};
+  if (nickname) payload.newNickName = nickname;
+  if (password) payload.newPassword = password;
+
+  const token = localStorage.getItem("auth");
+  axios.post("http://192.168.0.28:8881/api/account/editProfile", payload, {
+    headers : { Authorization : `Bearer ${token}`}
+  })
+  .then(res => {
+    alert(res.data.message);
+    window.location.href = "my-page.html";
+  })
+  .catch(err =>
+  alert(err));
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 기존 nickname, password 체크 등등...
-
+function deleteEvent() {
   const deleteBtn = document.querySelector(".delete-btn");
   deleteBtn.addEventListener("click", () => {
-    if (!confirm("정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
+    if (!confirm("정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+      return;
+    }
 
-    const email = document.getElementById("email").value;
-
-    fetch(`/api/account/deleteAccount?${encodeURIComponent(email)}`, {
-      method: "DELETE",
-    })
-    .then(res => {
-      if (res.ok) {
-        alert("회원 탈퇴가 완료되었습니다.");
-        window.location.href = "/map";  // 홈 또는 로그인 페이지로 이동
-      } else {
-        return res.text().then(msg => { throw new Error(msg); });
+    const token = localStorage.getItem("auth");
+    axios.delete("http://192.168.0.28:8881/api/account/deleteAccount", {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
+    })
+    .then(() => {
+      alert("회원 탈퇴가 완료되었습니다.");
+      window.location.href = "login-view.html";
     })
     .catch(err => {
       console.error(err);
       alert("회원 탈퇴 중 오류가 발생했습니다.");
     });
   });
-});
-
-document.addEventListener("DOMContentLoaded", () =>{
-  document.getElementById("nickname").addEventListener("blur",checkNickname);
-  document.getElementById("password").addEventListener("blur",checkPassword);
-  document.getElementById("passwordConfirm").addEventListener("blur",checkPassword);
-  document.querySelector("form").addEventListener("submit", checkEmpty);
+}
+deleteEvent();
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("nickname").addEventListener("blur", checkNickname);
+  document.getElementById("password").addEventListener("blur", checkPasswordMatch);
+  document.getElementById("password-confirm").addEventListener("blur", checkPasswordMatch);
+  document.getElementById("submitBtn").addEventListener("click", checkEmpty);
 });
