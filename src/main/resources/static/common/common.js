@@ -36,4 +36,4 @@ async function loadFragment(containerId, filePath) {
   }
 }
 
-export {common, rootUrl, loadLayout}
+export {common, rootUrl, loadLayout};
