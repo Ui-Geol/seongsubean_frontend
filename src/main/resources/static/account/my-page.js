@@ -1,3 +1,5 @@
+import {  rootUrl  } from '/common/common.js';
+
 document.addEventListener("DOMContentLoaded", () => {
   const userImage = document.getElementById("profile-img");
   const userNickname = document.getElementById("username");
@@ -5,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const token = localStorage.getItem("auth");
 
-  axios.get("http://127.0.0.1:8881/api/account/myPage", {
+  axios.get( rootUrl + "/api/account/myPage", {
     headers: {Authorization: `Bearer ${token}`}
   })
   .then(res => {
@@ -33,7 +35,7 @@ document.getElementById('profile-upload').addEventListener('change',
       const formData = new FormData();
       formData.append("file", file);
 
-      fetch("/api/account/uploadImage", {
+      fetch(rootUrl + "/api/account/uploadImage", {
         method: "PUT",
         body: formData
       }).then(response => {

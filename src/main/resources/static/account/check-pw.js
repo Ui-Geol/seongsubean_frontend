@@ -1,3 +1,5 @@
+import {  rootUrl  } from '/common/common.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById("confirmBtn");
   const error = document.getElementById("passwordError");
@@ -12,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    axios.post("http://127.0.0.1:8881/api/account/checkPw",
+    axios.post( rootUrl + "/api/account/checkPw",
         {password: password},
         {headers: {Authorization: `Bearer ${token}` } }
     )
