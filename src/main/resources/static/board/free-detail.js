@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     try {
-        const res = await common.get(`/api/freeboards/detail/${freeBoardId}`);
+        const res = await common.get(`/api/freeboards/detail`, { params: { id: freeBoardId } });
         const data = res.data;
         await fetchLoginEmail();
 
@@ -48,14 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const imageContainer = document.getElementById('image-container');
         imageContainer.innerHTML = '';
-
         for (const imgName of (data.images || [])) {
             if (imgName === 'default.png') continue;
             try {
                 const imagePath = `http://127.0.0.1:8881/api/common${imgName.startsWith('/') ? '' : '/'}${imgName}`;
                 const imageRes = await axios.get(imagePath, { responseType: 'blob' });
                 const imageUrl = URL.createObjectURL(imageRes.data);
-
                 const imgTag = document.createElement('img');
                 imgTag.src = imageUrl;
                 imgTag.classList.add('post-image');
@@ -68,7 +66,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const avatar = document.getElementById('author-avatar');
         let profileImageUrl = 'http://127.0.0.1:8881/images/board/SampleProfile.png';
-
         if (data.profileImage) {
             try {
                 const imageRes = await axios.get(`http://127.0.0.1:8881/api/common${data.profileImage.startsWith('/') ? '' : '/'}${data.profileImage}`, {
@@ -79,7 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.warn('작성자 프로필 이미지 로딩 실패:', err);
             }
         }
-
         avatar.innerHTML = `<img src="${profileImageUrl}" class="avatar-img">`;
 
     } catch (err) {
@@ -94,7 +90,7 @@ async function deleteHandler() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-        const res = await common.delete(`/api/freeboards/detail/${freeBoardId}`);
+        const res = await common.delete(`/api/freeboards`, { params: { id: freeBoardId } });
         if (res.data.deleted) {
             alert("삭제되었습니다.");
             window.location.href = `/board/free-list.html?ts=${Date.now()}`;
@@ -121,7 +117,7 @@ async function loadComments() {
     } catch {}
 
     try {
-        const res = await common.get(`/api/freeboards/comment/${freeBoardId}`);
+        const res = await common.get(`/api/freeboards/comment`, { params: { id: freeBoardId } });
         const comments = res.data;
 
         const commentList = document.querySelector(".comment-list");
@@ -151,7 +147,7 @@ async function loadComments() {
             btn.addEventListener("click", async () => {
                 const id = btn.dataset.id;
                 if (confirm("댓글을 삭제하시겠습니까?")) {
-                    await common.delete(`/api/freeboards/comment/${id}`);
+                    await common.delete(`/api/freeboards/comment`, { params: { id } });
                     alert("댓글이 삭제되었습니다.");
                     location.reload();
                 }
