@@ -217,6 +217,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ───────────────────────────────────────────────────────────────────
   // 카드 뷰 로직 (Kakao Maps와 독립적으로 실행)
+
+  async function fetchCafeImages(cafes) {
+    return await Promise.all(cafes.map(async (cafe) => {
+      if (!cafe.mainImage) {
+        return '/images/cafe/default.png'; // 기본 이미지
+      }
+
+      const imageUrl = `http://127.0.0.1:8881/api/common${cafe.mainImage}`;
+
+      try {
+        const res = await axios.get(imageUrl, { responseType: 'blob' });
+        return URL.createObjectURL(res.data);
+      } catch (err) {
+        console.warn(`이미지 불러오기 실패: ${cafe.mainImage}`, err);
+        return '/images/cafe/default.png';
+      }
+    }));
+  }
+
+
   function initCardView() {
     const ROW_SIZE = 4;      // 한 줄에 보여줄 카드 수
     let currentIndex = 0;    // 다음에 렌더링할 데이터 시작 인덱스
@@ -231,11 +251,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ─── 1. API 호출: cafes에 데이터 채우고 첫 줄 렌더링 ───
-    common.get('/api/main/cards')
-    .then(res => {
-      const data = res.data;
-      console.log('API 응답:', data);
-      cafes = data;
+    axios.get('http://127.0.0.1:8881/api/main/cards')
+    .then(async res => {
+      cafes = res.data;
+
+      // 🔽 mainImage → resolvedImageUrl 변환
+      const imageUrls = await fetchCafeImages(cafes);
+      cafes.forEach((cafe, idx) => {
+        cafe.resolvedImageUrl = imageUrls[idx];
+      });
+
       btn.style.display = cafes.length > ROW_SIZE ? 'block' : 'none';
       renderRow();
     })
@@ -259,12 +284,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         card.dataset.cafeId = cafe.cafeId;
         card.innerHTML = `
-                <img src="${cafe.mainImage}" alt="${cafe.cafeName}">
-                <div class="info">
-                    <h4>${cafe.cafeName}</h4>
-                    <p>${cafe.introduction || ''}</p>
-                </div>
-            `;
+        <img src="${cafe.resolvedImageUrl}" alt="${cafe.cafeName}">
+          <div class="info">
+            <h4>${cafe.cafeName}</h4>
+              <p>${cafe.introduction || ''}</p>
+          </div>
+`;
 
         card.addEventListener('click', () => {
           const cafeId = card.dataset.cafeId;
