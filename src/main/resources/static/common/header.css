@@ -2,7 +2,7 @@
   background-color: #ffffff;
   border-bottom: 1px solid #8a6534;
   font-family: 'Noto Sans KR', sans-serif;
-  height: 64px;
+  height: 70px;
   display: flex;
   align-items: center;
   padding: 0;
@@ -35,11 +35,11 @@
 .header-center {
   display: flex;
   gap: 1.5rem;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: 10px;
+  padding: 0px;
   flex: 1;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .authenticated form {
-  display: inline-block;
+  display: none;
   margin: 0;
 }
 
@@ -73,7 +73,6 @@
   border-radius: 1.5rem;
   padding: 0.4rem 1.2rem;
   font-size: 0.95rem;
-  font-weight: 500;
   text-decoration: none;
   display: inline-block;
   cursor: pointer;

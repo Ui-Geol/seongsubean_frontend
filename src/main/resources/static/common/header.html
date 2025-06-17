@@ -1,43 +1,32 @@
 <header class="header-fragment">
-  <div class="container">
+  <div class="header-container">
     <nav class="navbar navbar-custom">
       <div class="header-inner">
         <!-- 왼쪽: 로고 -->
         <div class="header-left">
-          <a class="navbar-brand" href="/">
+          <a class="navbar-brand" href="/mainpage/map.html">
             <img src="/images/common/logo.png" alt="Seongsu Bean Logo" class="logo-icon"/>
+          </a>
+          <a class="navbar-brand" href="/mainpage/map.html">
             <img src="/images/common/typoLogo.png" alt="Seongsu Bean Typo Logo" class="logo-text"/>
-          </a></div>
-
+          </a>
+        </div>
 
 
         <!-- 가운데: 메뉴 -->
         <ul class="navbar-nav header-center">
           <li class="nav-item">
-            <a class="nav-link" href="/free-list">자유</a>
+            <a class="nav-link" href="/board/free-list.html">자유</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/report-list">제보</a>
+            <a class="nav-link" href="/board/report-list.html">제보</a>
           </li>
         </ul>
-        <!-- 토글 버튼 (반응형) -->
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#mainNavbar"
-            aria-controls="mainNavbar"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
 
         <!-- 오른쪽: 로그인 / 로그아웃 -->
         <div class="header-right">
           <!-- 로그인 상태 -->
-          <div class="authenticated d-flex gap-2">
+          <div class="authenticated">
             <form action="/account/my-page.html" method="get">
               <button type="submit" class="btn-login">마이페이지</button>
             </form>
@@ -48,8 +37,11 @@
 
           <!-- 비로그인 상태 -->
           <div class="unauthenticated">
-            <a href="/account/login-view.html" class="btn-login">로그인</a>
+            <form action="/account/login-view.html" method="get" style="display:inline;">
+              <button type="submit" class="btn-login">로그인</button>
+            </form>
           </div>
+
         </div>
 
       </div>
