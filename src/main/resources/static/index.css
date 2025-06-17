@@ -48,10 +48,34 @@ html, body {
 
 #searchBox {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 250px;
+  top: 5px;
+  right: 20px;
+  width: 400px;           /* 너비 늘림 */
+  height: 45px;           /* 높이 추가 */
+  display: flex;          /* 가로 정렬 */
+  align-items: center;    /* 수직 정렬 */
+  padding: 0 10px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   z-index: 1000;
+}
+
+#searchInput {
+  flex: 1;                 /* 남는 공간 꽉 채움 */
+  height: 35px;
+  font-size: 16px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#searchBtn {
+  margin-left: 10px;
+  height: 35px;
+  padding: 0 15px;
+  font-size: 16px;
+  border-radius: 4px;
 }
 
 /* 카테고리 아이콘 목록 (우측) 스타일 */

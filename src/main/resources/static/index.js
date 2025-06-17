@@ -1,4 +1,4 @@
-import common, {loadLayout} from '/common/common.js';
+import {common,loadLayout} from '/common/common.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       map.setMaxLevel(5);
       const geocoder = new kakao.maps.services.Geocoder();
 
-      // 3. SeongsuBean 일러스트 및 커스텀 마커 삽입 (map.js 통합 부분)
+      // 3. SeongsuBean 일러스트 및 커스텀 마커 삽입 (index.js 통합 부분)
       geocoder.addressSearch('서울특별시 성동구 성수일로 56', (result, status) => {
         if (status === kakao.maps.services.Status.OK) {
           const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
@@ -200,7 +200,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 8. 카페 등록 버튼 클릭 시 이동
       const registerBtn = document.getElementById('cafe-registration');
-      if (registerBtn) {
+      // ✅ JWT 토큰 가져오기 (localStorage나 sessionStorage에서)
+      const token = localStorage.getItem('accessToken'); // 또는 sessionStorage.getItem('accessToken')
+
+      // ✅ 토큰 없으면 버튼 숨기기
+      if (!token && registerBtn) {
+        registerBtn.style.display = 'none';
+      }
+
+      // ✅ 버튼 클릭 시 페이지 이동
+      if (token && registerBtn) {
         registerBtn.addEventListener('click', () => {
           window.location.href = 'cafe/cafe-registration.html';
         });
@@ -231,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return URL.createObjectURL(res.data);
       } catch (err) {
         console.warn(`이미지 불러오기 실패: ${cafe.mainImage}`, err);
-        return '/images/cafe/default.png';
+        return '/images/board/free/default.png';
       }
     }));
   }
