@@ -2,7 +2,7 @@ body {
     font-family: 'Arial', sans-serif;
 }
 
-.nav-link {
+.free-list-container .nav-link {
     color: #333;
     font-weight: 500;
 }
@@ -55,8 +55,9 @@ body {
     background-color: #b78456;
     border-color: #b78456;
 }
-.dropdown-toggle {
+.free-list-container .dropdown-item,
+.free-list-container .dropdown-menu .dropdown-item  {
     background-color: white;
     border: 1px solid #ddd;
-    color: #333;
+    color: #333 !important;
 }
