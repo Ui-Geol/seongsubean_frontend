@@ -1,5 +1,4 @@
-import common, { loadLayout } from '/common/common.js';
-
+import { common, loadLayout, rootUrl } from '/common/common.js';
 
 let currentPage = 1;
 const pageSize = 7;
@@ -27,6 +26,9 @@ function formatDate(isoString) {
   });
 }
 
+document.addEventListener('DOMContentLoaded', fetchAndRenderList);
+loadLayout();
+
 async function fetchAndRenderList() {
   try {
     const res = await common.get(`/api/reportboards/list`, {
@@ -43,7 +45,22 @@ async function fetchAndRenderList() {
     totalPages = data.totalPages;
     currentPage = data.currentPage;
 
-    renderReportList();
+    const imageUrls = await Promise.all(currentPageItems.map(async (item) => {
+      if (!item.thumbnailImage?.trim()) {
+        return '/images/board/report/default.png';
+      }
+
+      const imagePath = `${rootUrl}/api/common${item.thumbnailImage}`;
+      try {
+        const imgRes = await common.get(imagePath, { responseType: 'blob' });
+        return URL.createObjectURL(imgRes.data);
+      } catch (e) {
+        console.warn('썸네일 불러오기 실패:', item.thumbnailImage, e);
+        return '/images/board/report/default.png';
+      }
+    }));
+
+    renderReportList(imageUrls);
     renderPagination();
   } catch (error) {
     console.error('게시글 목록 불러오기 실패:', error);
@@ -51,9 +68,7 @@ async function fetchAndRenderList() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', fetchAndRenderList);
-loadLayout();
-function renderReportList() {
+function renderReportList(imageUrls = []) {
   const container = document.querySelector('.article-list');
   container.innerHTML = '';
 
@@ -62,7 +77,7 @@ function renderReportList() {
     return;
   }
 
-  currentPageItems.forEach((item) => {
+  currentPageItems.forEach((item, index) => {
     const article = document.createElement('article');
     article.className = 'article-item';
     article.style.cursor = 'pointer';
@@ -70,9 +85,7 @@ function renderReportList() {
       window.location.href = `/board/report-detail.html?id=${item.reportBoardId}`;
     };
 
-    const imageUrl = item.thumbnailImage?.trim()
-        ? item.thumbnailImage
-        : '/images/board/default.png';
+    const imageUrl = imageUrls[index];
 
     article.innerHTML = `
       <div class="article-thumbnail">

@@ -1,5 +1,4 @@
-import common from '/common/common.js';
-import { loadLayout } from '/common/common.js';
+import { common, loadLayout, rootUrl } from '/common/common.js';
 
 let currentPage = 1;
 const pageSize = 12;
@@ -7,7 +6,7 @@ let searchKeyword = null;
 let searchType = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadLayout(); // ✅ header/footer 삽입
+    loadLayout();
     const searchBtn = document.querySelector("#searchButton");
     const dropdownBtn = document.querySelector(".dropdown-toggle");
     const searchInput = document.querySelector("#searchInput");
@@ -65,15 +64,15 @@ async function fetchPosts(page) {
             return;
         }
 
-        // ✅ 모든 이미지 요청을 병렬로 처리
+        // ✅ 이미지 blob 처리
         const imageUrls = await Promise.all(posts.map(async (item) => {
             if (!item.thumbnailImage) {
                 return '/images/board/free/default.png';
             }
 
-            const imagePath = `http://127.0.0.1:8881/api/common${item.thumbnailImage}`;
+            const imagePath = `${rootUrl}/api/common${item.thumbnailImage}`;
             try {
-                const imageRes = await axios.get(imagePath, { responseType: 'blob' });
+                const imageRes = await common.get(imagePath, { responseType: 'blob' });
                 return URL.createObjectURL(imageRes.data);
             } catch (e) {
                 console.warn(`이미지 불러오기 실패: ${item.thumbnailImage}`, e);
@@ -81,7 +80,7 @@ async function fetchPosts(page) {
             }
         }));
 
-        // ✅ 이미지 URL과 함께 카드 렌더링
+        // ✅ 카드 렌더링
         posts.forEach((item, index) => {
             const card = document.createElement("div");
             card.className = "col-md-4";
