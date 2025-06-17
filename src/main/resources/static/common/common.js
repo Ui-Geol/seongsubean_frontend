@@ -1,48 +1,39 @@
+import {updateAuthDisplay} from '/common/header.js';
+const rootUrl = 'http://127.0.0.1:8881';
+
 const common = axios.create({
-    baseURL: 'http://127.0.0.1:8881',
-    headers: {
-        'Content-Type': 'application/json'
-    }
+  baseURL: rootUrl,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
-export default common;
 
-export function loadLayout() {
-    // Header 삽입
-    axios.get('/common/header.html')
-        .then(res => {
-            document.getElementById('header-container').innerHTML = res.data;
+async function loadLayout() {
+  // Header와 Footer를 순차적으로 로드
+  await loadFragment('header-container', '/common/header.html');
+  await loadFragment('footer-container', '/common/footer.html');
 
-            // 로그인 상태 확인 대신 하드코딩 (비로그인 상태라고 가정)
-            // const loginArea = document.getElementById('login-area');
-            // if (loginArea) {
-            //     loginArea.innerHTML = `<a href="/account/login.html">로그인</a>`;
-            // }
+  // HTML 로드 완료 후 인증 상태 업데이트
+  updateAuthDisplay();
 
-            // 백엔드 붙인 뒤에는 아래처럼 다시 바꾸면 됨
-
-            return common.get('/')
-              .then(res => {
-                if (res.data.success) {
-                  loginArea.innerHTML = `
-                    <form action="/account/myPage" method="get"><button type="submit">마이페이지</button></form>
-                    <form action="/account/logout" method="post"><button type="submit">로그아웃</button></form>
-                  `;
-                } else {
-                  loginArea.innerHTML = `<a href="/account/login.html">로그인</a>`;
-                }
-              });
-
-        })
-        .catch(err => {
-            console.error('[layout] header 삽입 실패:', err);
-        });
-
-    // Footer 삽입
-    axios.get('/common/footer.html')
-        .then(res => {
-            document.getElementById('footer-container').innerHTML = res.data;
-        })
-        .catch(err => {
-            console.error('[layout] footer 삽입 실패:', err);
-        });
+  // 로그아웃 버튼 이벤트 리스너 추가
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    console.log('토큰 삭제')
+    localStorage.removeItem('auth');
+  });
 }
+
+async function loadFragment(containerId, filePath) {
+  try {
+    const response = await fetch(filePath);
+    if (!response.ok) {
+      throw new Error(`${filePath} 파일을 불러올 수 없습니다.`);
+    }
+    const html = await response.text();
+    document.getElementById(containerId).innerHTML = html;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export {common, rootUrl, loadLayout};
