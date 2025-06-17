@@ -1,4 +1,4 @@
-import common from '/common/common.js';
+import {  common  } from '/common/common.js';
 
 axios.defaults.withCredentials = true;
 
