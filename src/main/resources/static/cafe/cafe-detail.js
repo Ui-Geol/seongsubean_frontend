@@ -311,14 +311,11 @@ function formatPrice(price) {
   return price.toLocaleString('ko-kr') + "원";
 }
 
-function renderMenuList(menuInfoList) {
-  const menuSection = document.createElement('div');
-  menuSection.className = 'menu-list';
-
+async function renderMenuList(menuInfoList) {
   const menuListEl = document.getElementById('menu-list');
   menuListEl.innerHTML = ''; // 기존 내용 제거
 
-  menuInfoList.forEach(menu => {
+  for (const menu of menuInfoList) {
     // 이미지가 없으면 기본 이미지 사용
     const imageSrc = menu.image ? menu.image : '/images/common/default.png';
 
@@ -327,7 +324,7 @@ function renderMenuList(menuInfoList) {
         ? `<div class="menu-description">${menu.description}</div>`
         : '';
 
-    // 메뉴 아이템 HTML 생성
+    // 메뉴 아이템 HTML 생성 (이미지 src는 임시로 비워둠)
     const menuItemHtml = `
       <div class="menu-item">
         <div class="menu-info">
@@ -345,13 +342,32 @@ function renderMenuList(menuInfoList) {
           ${descriptionHtml}
           <div class="menu-price">${formatPrice(menu.price)}</div>
         </div>
-        <img class="menu-image" src="${imageSrc}" alt="${menu.menuName}"/>
+        <img class="menu-image" alt="${menu.menuName}"/>
       </div>
     `;
 
+    // DOM에 추가
     menuListEl.insertAdjacentHTML('beforeend', menuItemHtml);
-  });
+
+    // 새로 추가된 마지막 menu-item의 img 요소 선택
+    const menuItemEl = menuListEl.lastElementChild;
+    const imgEl = menuItemEl.querySelector('.menu-image');
+
+    try {
+      // 이미지 blob 받아오기
+      const imageResponse = await axios.get(
+          rootUrl + '/api/common' + imageSrc,
+          { responseType: 'blob' }
+      );
+      const imageUrl = URL.createObjectURL(imageResponse.data);
+      imgEl.src = imageUrl;
+    } catch (e) {
+      // 이미지 로드 실패 시 기본 이미지 사용
+      imgEl.src = '/images/common/default.png';
+    }
+  }
 }
+
 
 function renderOperationTimes(operationTimes) {
   const container = document.getElementById('hoursDetail');
