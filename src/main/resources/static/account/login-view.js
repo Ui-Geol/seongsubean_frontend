@@ -2,6 +2,19 @@ import common from '/common/common.js';
 
 axios.defaults.withCredentials = true;
 
+document.addEventListener("DOMContentLoaded", () => {
+    const google = document.getElementById("google-login-btn");
+    const kakao = document.getElementById("kakao-login-btn");
+
+    google.addEventListener("click", () => {
+        window.location.href = `http://127.0.0.1:8881/oauth2/authorization/google`;
+    });
+
+    kakao.addEventListener("click", () => {
+        window.location.href = `http://127.0.0.1:8881/oauth2/authorization/kakao`;
+    });
+});
+
 document.querySelector('#login-btn').addEventListener('click', () => {
     const email = document.querySelector('#email').value.trim();
     const password = document.querySelector('#password').value.trim();
