@@ -20,7 +20,7 @@ document.querySelector('#login-btn').addEventListener('click', () => {
             const token = res.headers["authorization"];
             if (token) {
                 localStorage.auth = token;
-                window.location.href = '/mainpage/map.html';
+                window.location.href = '../mainpage/index.html';
             } else {
                 showError('로그인 실패: 토큰이 없습니다.');
             }
