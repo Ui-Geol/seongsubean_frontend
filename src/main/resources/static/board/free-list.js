@@ -1,10 +1,5 @@
 import common from '/common/common.js';
 import { loadLayout } from '/common/common.js';
-document.addEventListener("DOMContentLoaded", () => {
-    loadLayout(); // ✅ header/footer 삽입
-
-    const searchBtn = document.querySelector("#searchButton");
-});
 
 let currentPage = 1;
 const pageSize = 12;
@@ -12,6 +7,7 @@ let searchKeyword = null;
 let searchType = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+    loadLayout(); // ✅ header/footer 삽입
     const searchBtn = document.querySelector("#searchButton");
     const dropdownBtn = document.querySelector(".dropdown-toggle");
     const searchInput = document.querySelector("#searchInput");
