@@ -1,4 +1,4 @@
-import common from '/common/common.js';
+import {  common, rootUrl  } from '/common/common.js';
 
 axios.defaults.withCredentials = true;
 
@@ -7,11 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const kakao = document.getElementById("kakao-login-btn");
 
     google.addEventListener("click", () => {
-        window.location.href = `http://127.0.0.1:8881/oauth2/authorization/google`;
+        window.location.href = rootUrl + `/oauth2/authorization/google`;
     });
 
     kakao.addEventListener("click", () => {
-        window.location.href = `http://127.0.0.1:8881/oauth2/authorization/kakao`;
+        window.location.href = rootUrl + `/oauth2/authorization/kakao`;
     });
 });
 
@@ -24,7 +24,7 @@ document.querySelector('#login-btn').addEventListener('click', () => {
         return;
     }
 
-    common.post('http://localhost:8881/login', {
+    common.post( rootUrl + '/login', {
         email: email,
         password: password
     })

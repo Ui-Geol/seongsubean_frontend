@@ -1,3 +1,5 @@
+import {  rootUrl  } from '/common/common.js';
+
 const validationState = {
   nicknameValid: false,
   passwordMatch: false
@@ -11,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () =>{
   const confirmRow = document.getElementById("password-confirm").closest(".form-row");
 
   const token = localStorage.getItem("auth");
-  axios.get("http://192.168.0.28:8881/api/account/editProfile",{
+  axios.get( rootUrl + "/api/account/editProfile",{
     headers : { Authorization: `Bearer ${token}`}
   })
   .then(res =>{
@@ -40,7 +42,7 @@ function checkNickname() {
     return;
   }
 
-  axios.post("http://192.168.0.28:8881/api/account/checkNickname", {
+  axios.post(rootUrl + "/api/account/checkNickname", {
     nickName: nickname
   })
   .then(res => {
@@ -101,7 +103,7 @@ function checkEmpty(event) {
   if (password) payload.newPassword = password;
 
   const token = localStorage.getItem("auth");
-  axios.post("http://192.168.0.28:8881/api/account/editProfile", payload, {
+  axios.post( rootUrl + "/api/account/editProfile", payload, {
     headers : { Authorization : `Bearer ${token}`}
   })
   .then(res => {
@@ -120,7 +122,7 @@ function deleteEvent() {
     }
 
     const token = localStorage.getItem("auth");
-    axios.delete("http://192.168.0.28:8881/api/account/deleteAccount", {
+    axios.delete( rootUrl + "/api/account/deleteAccount", {
       headers: {
         Authorization: `Bearer ${token}`
       }
