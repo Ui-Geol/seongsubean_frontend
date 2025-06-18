@@ -1,3 +1,5 @@
+import {  rootUrl  } from '/common/common.js';
+
 const validationState = {
   emailValid: false,
   nicknameValid: false,
@@ -15,7 +17,7 @@ function checkEmail() {
     return;
   }
 
-  axios.post("http://192.168.0.28:8881/api/account/checkEmail", {
+  axios.post( rootUrl + "/api/account/checkEmail", {
     email: email
   })
   .then(res => {
@@ -45,7 +47,7 @@ function checkNickname() {
     return;
   }
 
-  axios.post("http://192.168.0.28:8881/api/account/checkNickname", {
+  axios.post( rootUrl + "/api/account/checkNickname", {
     nickName: nickname
   })
   .then(res => {
@@ -114,7 +116,7 @@ function handleJoin(event) {
     return;
   }
   // 통과 시 submit 허용
-  axios.post("http://192.168.0.28:8881/api/account/join",{
+  axios.post( rootUrl + "/api/account/join",{
     email : email,
     nickName : nickname,
     password : password,
