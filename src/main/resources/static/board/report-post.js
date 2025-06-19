@@ -1,12 +1,7 @@
-import common from '/common/common.js';
-import { loadLayout } from '/common/common.js';
-document.addEventListener("DOMContentLoaded", () => {
-    loadLayout(); // ✅ header/footer 삽입
-
-    const searchBtn = document.querySelector("#searchButton");
-});
+import { loadLayout, rootURL } from '/common/common.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
+    loadLayout();
     const editor = new toastui.Editor({
         el: document.querySelector('#editor'),
         height: '500px',
@@ -15,44 +10,30 @@ document.addEventListener('DOMContentLoaded', async function () {
         language: 'ko'
     });
 
-    const counter = document.createElement('div');
-    counter.className = 'char-count';
-    counter.style.marginTop = '8px';
-    counter.style.fontSize = '14px';
-    counter.style.color = '#666';
-    counter.textContent = '0 / 2000자';
-    document.querySelector('#editor').after(counter);
-
-    editor.on('change', function () {
-        const html = editor.getHTML();
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
-        const plainText = tempDiv.textContent || tempDiv.innerText || '';
-        const length = plainText.length;
-        counter.textContent = `${length} / 2000자`;
-        counter.style.color = (length > 2000) ? '#dc3545' : '#666';
-    });
-
-    const pathParts = window.location.pathname.split('/');
-    const last = pathParts[pathParts.length - 1];
-    const reportId = /^\d+$/.test(last) ? last : null;
-    const isEdit = reportId !== null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const reportId = urlParams.get("id");
+    const isEdit = !!reportId;
 
     const form = document.getElementById('report-form');
     const titleInput = document.getElementById('title');
     const contentInput = document.getElementById('editor-contents');
-    const emailInput = document.getElementById('email');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            window.location.href = '/board/report-list.html';
+        });
+    }
 
     if (isEdit) {
         try {
-            const res = await common.get(`/api/report/${reportId}`);
+            const res = await common.get(`${rootURL}/api/reportboards/detail/${reportId}`);
             const data = res.data;
             titleInput.value = data.title;
             editor.setHTML(data.content);
-            emailInput.value = data.email;
         } catch (err) {
             console.error('수정 데이터 불러오기 실패', err);
-            alert('게시글 정보를 불러올 수 없습니다.');
+            alert('제보글 정보를 불러올 수 없습니다.');
         }
     }
 
@@ -61,20 +42,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const title = titleInput.value.trim();
         const contentHtml = editor.getHTML();
-        const tempElement = document.createElement('div');
-        tempElement.innerHTML = contentHtml;
-        const plainText = tempElement.textContent || tempElement.innerText || '';
-        const email = emailInput.value;
-
-        if (!title) {
-            alert('제목을 입력해주세요.');
-            return;
-        }
-        if (plainText.length > 2000) {
-            alert('본문은 2000자 이하로 작성해주세요.');
-            return;
-        }
-
         contentInput.value = contentHtml;
 
         const imageInput = document.getElementById('images');
@@ -85,24 +52,28 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
-        const formData = new FormData(form);
-        const url = reportId ? `/api/report/post/${reportId}` : '/api/report';
-        const method = reportId ? 'put' : 'post';
-
         try {
-            const response = await common[method](url, method === 'post' ? formData : {
-                title,
-                content: contentHtml,
-                email
-            });
+            let response;
+            if (isEdit) {
+                response = await common.put(
+                    `${rootURL}/api/reportboards/post/${reportId}`,
+                    {
+                        title,
+                        content: contentHtml
+                    }
+                );
+            } else {
+                const formData = new FormData(form);
+                response = await common.post(`${rootURL}/api/reportboards`, formData);
+            }
 
             const result = response.data;
-            if (reportId && result.updated) {
-                alert('게시글이 수정되었습니다!');
-                location.href = `/report/detail/${reportId}`;
-            } else if (!reportId && result.success) {
-                alert('게시글이 등록되었습니다!');
-                location.href = `/report/detail/${result.id}`;
+            if (isEdit && result.updated) {
+                alert('제보글이 수정되었습니다!');
+                location.href = `/board/report-detail.html?id=${reportId}`;
+            } else if (!isEdit && result.success) {
+                alert('제보글이 등록되었습니다!');
+                location.href = `/board/report-detail.html?id=${result.id}`;
             } else {
                 alert('처리에 실패했습니다.');
             }
@@ -111,11 +82,4 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert('요청 중 문제가 발생했습니다.');
         }
     });
-
-    const cancelBtn = document.getElementById('cancel-btn');
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-            window.location.href = '/report/list';
-        });
-    }
 });
