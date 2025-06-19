@@ -1,4 +1,4 @@
-import common, { loadLayout } from '/common/common.js';
+import { loadLayout, rootURL } from '/common/common.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
     loadLayout();
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (isEdit) {
         try {
-            const res = await common.get(`/api/freeboards/detail`, { params: { id: freeBoardId } });
+            const res = await common.get(`${rootURL}/api/freeboards/detail/${freeBoardId}`);
             const data = res.data;
             titleInput.value = data.title;
             editor.setHTML(data.content);
@@ -89,22 +89,27 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
-        const formData = new FormData(form);
-        const url = isEdit ? `/api/freeboards/post?id=${freeBoardId}` : '/api/freeboards';
-        const method = isEdit ? 'put' : 'post';
-
         try {
-            const response = await common[method](url, method === 'post' ? formData : {
-                headWord,
-                title,
-                content: contentHtml
-            });
+            let response;
+            if (isEdit) {
+                response = await common.put(
+                    `${rootURL}/api/freeboards/post/${freeBoardId}`,
+                    {
+                        headWord,
+                        title,
+                        content: contentHtml
+                    }
+                );
+            } else {
+                const formData = new FormData(form);
+                response = await common.post(`${rootURL}/api/freeboards`, formData);
+            }
 
             const result = response.data;
-            if (freeBoardId && result.updated) {
+            if (isEdit && result.updated) {
                 alert('게시글이 수정되었습니다!');
                 location.href = `/board/free-detail.html?id=${freeBoardId}`;
-            } else if (!freeBoardId && result.success) {
+            } else if (!isEdit && result.success) {
                 alert('게시글이 등록되었습니다!');
                 location.href = `/board/free-detail.html?id=${result.id}`;
             } else {
