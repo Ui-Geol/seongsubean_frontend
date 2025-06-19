@@ -1,4 +1,4 @@
-import {rootUrl, loadLayout} from '/common/common.js';
+import {loadLayout, rootUrl} from '/common/common.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 });
 
-function showTab(tab) {
+async function showTab(tab) {
   // 모든 탭 컨텐츠 숨김
   document.querySelectorAll('.tab-content').forEach(div => {
     div.style.display = 'none';
@@ -129,8 +129,8 @@ function showTab(tab) {
     document.getElementById('reviewTab').style.display = 'block';
     const container = document.getElementById('review-list');
     if (cafeReviewData) {
-      container.innerHTML = renderReviewList(cafeReviewData);
-      setReviewImageBlobs();
+      container.innerHTML = await renderReviewList(cafeReviewData);
+      await setReviewImageBlobs();
       attachMoreButtonEvent();
     } else {
       container.innerHTML = '데이터가 없습니다.';
@@ -356,17 +356,16 @@ async function renderMenuList(menuInfoList) {
       // 이미지 blob 받아오기
       const imageResponse = await axios.get(
           rootUrl + '/api/common' + imageSrc,
-          { responseType: 'blob' }
+          {responseType: 'blob'}
       );
       const imageUrl = URL.createObjectURL(imageResponse.data);
       imgEl.src = imageUrl;
     } catch (e) {
       // 이미지 로드 실패 시 기본 이미지 사용
-      imgEl.src = '/images/common/default.png';
+      imgEl.src = '/images/cafe/menuDefault.png';
     }
   }
 }
-
 
 function renderOperationTimes(operationTimes) {
   const container = document.getElementById('hoursDetail');
@@ -389,7 +388,7 @@ function renderOperationTimes(operationTimes) {
   });
 }
 
-function renderReviewList(totalReviewDTOList) {
+async function renderReviewList(totalReviewDTOList) {
   function renderStars(score) {
     let stars = '';
     for (let i = 1; i <= 5; i++) {
@@ -408,7 +407,7 @@ function renderReviewList(totalReviewDTOList) {
             ? (review.userImage.startsWith('/api/common')
                 ? '/images/common/loading.gif' // 로딩 이미지
                 : review.userImage)
-            : '/images/common/SampleProfile.png';
+            : '/images/cafe/SampleProfile.png';
         const userImgDataSrc = review.userImage && review.userImage.startsWith(
             '/api/common')
             ? `data-src="${review.userImage}"`
@@ -420,9 +419,9 @@ function renderReviewList(totalReviewDTOList) {
           reviewImagesHtml =
               `<div class="review-images">` +
               review.reviewImage.map(img =>
-                  img.image && img.image.startsWith('/api/common')
+                  img.image && img.image.startsWith('/images/cafe')
                       ? `<img class="review-image" src="/images/common/loading.gif" data-src="${img.image}" alt="${img.reviewImageId}">`
-                      : `<img class="review-image" src="${img.image}" alt="${img.reviewImageId}">`
+                      : `<img class="review-image" src="/images/cafe/menuDefault.png" alt="${img.reviewImageId}">`
               ).join('') +
               `</div>`;
         }
@@ -458,7 +457,7 @@ async function setReviewImageBlobs() {
   const images = document.querySelectorAll('.review-image, .reviewer-avatar');
   for (const img of images) {
     const dataSrc = img.getAttribute('data-src');
-    if (dataSrc && dataSrc.startsWith('/api/common')) {
+    if (dataSrc && dataSrc.startsWith('/images')) {
       try {
         const response = await axios.get(rootUrl + dataSrc,
             {responseType: 'blob'});
@@ -467,7 +466,7 @@ async function setReviewImageBlobs() {
         img.removeAttribute('data-src');
       } catch (e) {
         // 실패 시 대체 이미지로 교체
-        img.src = '/images/common/SampleProfile.png';
+        img.src = '/images/cafe/SampleProfile.png';
       }
     }
   }
