@@ -4,188 +4,188 @@
   <title>카페 등록</title>
   <meta charset="UTF-8">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="cafe-registration.js"></script>
+  <script type="module" src="cafe-registration.js"></script>
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <link rel="stylesheet" href="cafe-registration.css"/>
 
 </head>
 <body>
-  <div class="cafe-regist-container">
-    <div class="form-wrapper">
-      <h1 class="form-title">카페 만들기</h1>
-      <form id="cafeForm" class="cafe-form">
+<div class="cafe-regist-container">
+  <div class="form-wrapper">
+    <h1 class="form-title">카페 만들기</h1>
+    <form id="cafeForm" class="cafe-form">
 
-        <!-- 1) 카페 이름 -->
-        <div class="form-group">
-          <label for="cafeName">카페이름</label>
-          <input type="text"
-                 id="cafeName"
-                 name="cafeName"
-                 placeholder="이름을 입력해주세요"
-                 required>
+      <!-- 1) 카페 이름 -->
+      <div class="form-group">
+        <label for="cafeName">카페이름</label>
+        <input type="text"
+               id="cafeName"
+               name="cafeName"
+               placeholder="이름을 입력해주세요"
+               required>
+      </div>
+
+      <!-- 2) 주소 검색 필드 -->
+      <div class="form-group">
+        <label for="address">주소</label>
+        <button type="button" id="btnAddressSearch">주소검색</button>
+        <input type="text"
+               id="address"
+               name="address"
+               placeholder="주소를 입력해주세요"
+               readonly
+               required>
+        <input type="text"
+               id="zipCode"
+               name="zipCode"
+               placeholder="우편번호"
+               readonly
+               required>
+        <input type="text"
+               id="detailAddress"
+               name="detailAddress"
+               placeholder="상세주소를 입력해주세요"
+               required>
+      </div>
+
+      <!-- 3) 전화번호 -->
+      <div class="form-group">
+        <label for="phone">전화번호</label>
+        <input type="tel"
+               id="phone"
+               name="phone"
+               placeholder="전화번호를 입력해주세요"
+               required>
+      </div>
+
+      <!-- 4) 소개 -->
+      <div class="form-group">
+        <label for="description">소개</label>
+        <textarea id="description"
+                  name="description"
+                  placeholder="최대 300자"
+                  maxlength="300"></textarea>
+        <div class="char-count">
+          <span id="charCount">0</span>/300
         </div>
+      </div>
 
-        <!-- 2) 주소 검색 필드 -->
-        <div class="form-group">
-          <label for="address">주소</label>
-          <button type="button" id="btnAddressSearch">주소검색</button>
-          <input type="text"
-                 id="address"
-                 name="address"
-                 placeholder="주소를 입력해주세요"
-                 readonly
-                 required>
-          <input type="text"
-                 id="zipCode"
-                 name="zipCode"
-                 placeholder="우편번호"
-                 readonly
-                 required>
-          <input type="text"
-                 id="detailAddress"
-                 name="detailAddress"
-                 placeholder="상세주소를 입력해주세요"
-                 required>
+      <!-- 5) 숨겨진 input: JS가 JSON을 채워넣습니다 -->
+      <input type="hidden" id="businessHoursJson" name="businessHours" th:value="''"/>
+
+      <!-- ──────────────────────────────────────────────────────────── -->
+      <!-- (A) 영업시간 섹션 -->
+      <div class="mb-3 position-relative">
+        <label class="form-label">영업시간</label>
+
+        <!-- (B) "영업시간 추가" 버튼 -->
+        <button
+            type="button"
+            id="add-business-hours-btn"
+            class="btn btn-sm btn-primary position-absolute top-0 end-0"
+            style="transform: translate(0, -50%);">
+          영업시간 추가
+        </button>
+
+        <!-- (C) 그룹 컨테이너 -->
+        <div id="business-hours-container" class="d-flex flex-column gap-2 mt-3">
+          <!-- JS가 여기에 첫 그룹을 자동으로 추가합니다. -->
         </div>
+      </div>
 
-        <!-- 3) 전화번호 -->
-        <div class="form-group">
-          <label for="phone">전화번호</label>
-          <input type="tel"
-                 id="phone"
-                 name="phone"
-                 placeholder="전화번호를 입력해주세요"
-                 required>
-        </div>
+      <!-- (D) 템플릿: 각 select에는 placeholder만 남김 -->
+      <template id="tpl-business-hours">
+        <div class="business-hours-group d-flex align-items-center">
+          <!-- 요일 -->
+          <label class="me-2">
+            <select class="weekday-select form-select" required>
+              <option value="">요일</option>
+              <option value="월요일">월요일</option>
+              <option value="화요일">화요일</option>
+              <option value="수요일">수요일</option>
+              <option value="목요일">목요일</option>
+              <option value="금요일">금요일</option>
+              <option value="토요일">토요일</option>
+              <option value="일요일">일요일</option>
+            </select>
+          </label>
 
-        <!-- 4) 소개 -->
-        <div class="form-group">
-          <label for="description">소개</label>
-          <textarea id="description"
-                    name="description"
-                    placeholder="최대 300자"
-                    maxlength="300"></textarea>
-          <div class="char-count">
-            <span id="charCount">0</span>/300
-          </div>
-        </div>
+          <!-- 시작 시간: 시 -->
+          <label class="me-1">
+            <select class="hour-select form-select" required>
+              <option value="">시</option>
+              <!-- 옵션은 JS에서 채웁니다. -->
+            </select>
+          </label>
+          <!-- 시작 시간: 분 -->
+          <label class="me-2">
+            <select class="minute-select form-select" required>
+              <option value="">분</option>
+              <!-- 옵션은 JS에서 채웁니다. -->
+            </select>
+          </label>
+          <!-- 시작 시간: AM/PM -->
+          <label class="me-2">
+            <select class="period-select form-select" required>
+              <option value="">AM/PM</option>
+              <!-- 옵션은 JS에서 채웁니다. -->
+            </select>
+          </label>
 
-        <!-- 5) 숨겨진 input: JS가 JSON을 채워넣습니다 -->
-        <input type="hidden" id="businessHoursJson" name="businessHours" th:value="''"/>
+          <!-- 구분자 (~) -->
+          <span class="time-separator me-2">~</span>
 
-        <!-- ──────────────────────────────────────────────────────────── -->
-        <!-- (A) 영업시간 섹션 -->
-        <div class="mb-3 position-relative">
-          <label class="form-label">영업시간</label>
+          <!-- 종료 시간: 시 -->
+          <label class="me-1">
+            <select class="hour-select form-select" required>
+              <option value="">시</option>
+              <!-- JS에서 채움 -->
+            </select>
+          </label>
+          <!-- 종료 시간: 분 -->
+          <label class="me-2">
+            <select class="minute-select form-select" required>
+              <option value="">분</option>
+              <!-- JS에서 채움 -->
+            </select>
+          </label>
+          <!-- 종료 시간: AM/PM -->
+          <label class="me-2">
+            <select class="period-select form-select" required>
+              <option value="">AM/PM</option>
+              <!-- JS에서 채움 -->
+            </select>
+          </label>
 
-          <!-- (B) "영업시간 추가" 버튼 -->
-          <button
-              type="button"
-              id="add-business-hours-btn"
-              class="btn btn-sm btn-primary position-absolute top-0 end-0"
-              style="transform: translate(0, -50%);">
-            영업시간 추가
+          <!-- 삭제 버튼 -->
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger btn-remove-hours">
+            x
           </button>
-
-          <!-- (C) 그룹 컨테이너 -->
-          <div id="business-hours-container" class="d-flex flex-column gap-2 mt-3">
-            <!-- JS가 여기에 첫 그룹을 자동으로 추가합니다. -->
-          </div>
         </div>
-
-        <!-- (D) 템플릿: 각 select에는 placeholder만 남김 -->
-        <template id="tpl-business-hours">
-          <div class="business-hours-group d-flex align-items-center">
-            <!-- 요일 -->
-            <label class="me-2">
-              <select class="weekday-select form-select" required>
-                <option value="">요일</option>
-                <option value="월요일">월요일</option>
-                <option value="화요일">화요일</option>
-                <option value="수요일">수요일</option>
-                <option value="목요일">목요일</option>
-                <option value="금요일">금요일</option>
-                <option value="토요일">토요일</option>
-                <option value="일요일">일요일</option>
-              </select>
-            </label>
-
-            <!-- 시작 시간: 시 -->
-            <label class="me-1">
-              <select class="hour-select form-select" required>
-                <option value="">시</option>
-                <!-- 옵션은 JS에서 채웁니다. -->
-              </select>
-            </label>
-            <!-- 시작 시간: 분 -->
-            <label class="me-2">
-              <select class="minute-select form-select" required>
-                <option value="">분</option>
-                <!-- 옵션은 JS에서 채웁니다. -->
-              </select>
-            </label>
-            <!-- 시작 시간: AM/PM -->
-            <label class="me-2">
-              <select class="period-select form-select" required>
-                <option value="">AM/PM</option>
-                <!-- 옵션은 JS에서 채웁니다. -->
-              </select>
-            </label>
-
-            <!-- 구분자 (~) -->
-            <span class="time-separator me-2">~</span>
-
-            <!-- 종료 시간: 시 -->
-            <label class="me-1">
-              <select class="hour-select form-select" required>
-                <option value="">시</option>
-                <!-- JS에서 채움 -->
-              </select>
-            </label>
-            <!-- 종료 시간: 분 -->
-            <label class="me-2">
-              <select class="minute-select form-select" required>
-                <option value="">분</option>
-                <!-- JS에서 채움 -->
-              </select>
-            </label>
-            <!-- 종료 시간: AM/PM -->
-            <label class="me-2">
-              <select class="period-select form-select" required>
-                <option value="">AM/PM</option>
-                <!-- JS에서 채움 -->
-              </select>
-            </label>
-
-            <!-- 삭제 버튼 -->
-            <button type="button"
-                    class="btn btn-sm btn-outline-danger btn-remove-hours">
-             x
-            </button>
+      </template>
+      <!-- 8) 이미지 업로드 및 미리보기 -->
+      <div class="form-group">
+        <div class="image-upload" id="imageUpload">
+          <div class="upload-content">
+            <div class="upload-icon">📷</div>
+            <span class="upload-text">사진 추가</span>
           </div>
-        </template>
-        <!-- 8) 이미지 업로드 및 미리보기 -->
-        <div class="form-group">
-          <div class="image-upload" id="imageUpload">
-            <div class="upload-content">
-              <div class="upload-icon">📷</div>
-              <span class="upload-text">사진 추가</span>
-            </div>
-            <input type="file" id="imageInput" name="image" accept="image/*" multiple
-                   style="display: none;">
-          </div>
-          <div id="imagePreview" class="image-preview"></div>
+          <input type="file" id="imageInput" name="image" accept="image/*" multiple
+                 style="display: none;">
         </div>
+        <div id="imagePreview" class="image-preview"></div>
+      </div>
 
-        <!-- 9) 폼 하단: 취소/등록 버튼 -->
-        <div class="form-actions">
-          <button type="button" class="btn btn-cancel" id="cancelBtn">취소</button>
-          <button type="submit" class="btn btn-submit" id="submitJsonBtn">등록</button>
-        </div>
+      <!-- 9) 폼 하단: 취소/등록 버튼 -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-cancel" id="cancelBtn">취소</button>
+        <button type="submit" class="btn btn-submit" id="submitJsonBtn">등록</button>
+      </div>
 
-      </form>
-    </div>
+    </form>
   </div>
+</div>
 
 </body>
 </html>
