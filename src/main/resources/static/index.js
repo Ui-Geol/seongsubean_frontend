@@ -199,20 +199,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // 8. 카페 등록 버튼 클릭 시 이동
+      // ✅ JWT 토큰 가져오기
+      const token = localStorage.getItem('auth');
       const registerBtn = document.getElementById('cafe-registration');
-      // ✅ JWT 토큰 가져오기 (localStorage나 sessionStorage에서)
-      const token = localStorage.getItem('accessToken'); // 또는 sessionStorage.getItem('accessToken')
 
-      // ✅ 토큰 없으면 버튼 숨기기
-      if (!token && registerBtn) {
-        registerBtn.style.display = 'none';
-      }
-
-      // ✅ 버튼 클릭 시 페이지 이동
-      if (token && registerBtn) {
-        registerBtn.addEventListener('click', () => {
-          window.location.href = 'cafe/cafe-registration.html';
-        });
+      // ✅ 버튼이 존재할 경우 토큰 여부에 따라 보이기/숨기기 결정
+      if (registerBtn) {
+        if (!token) {
+          registerBtn.style.display = 'none';
+        } else {
+          registerBtn.style.display = 'block'; // 명시적으로 표시
+          registerBtn.addEventListener('click', () => {
+            window.location.href = 'cafe/cafe-registration.html';
+          });
+        }
       }
 
       console.log('Kakao Maps 초기화 완료');
