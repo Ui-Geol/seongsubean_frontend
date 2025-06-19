@@ -1,4 +1,4 @@
-import {common,loadLayout} from '/common/common.js';
+import {rootUrl,common,loadLayout} from '/common/common.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return '/images/cafe/default.png'; // 기본 이미지
       }
 
-      const imageUrl = `http://127.0.0.1:8881/api/common${cafe.mainImage}`;
+      const imageUrl = rootUrl + `/api/common${cafe.mainImage}`;
 
       try {
         const res = await axios.get(imageUrl, { responseType: 'blob' });
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ─── 1. API 호출: cafes에 데이터 채우고 첫 줄 렌더링 ───
-    axios.get('http://127.0.0.1:8881/api/main/cards')
+    axios.get( rootUrl + '/api/main/cards')
     .then(async res => {
       cafes = res.data;
 

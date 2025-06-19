@@ -1,10 +1,9 @@
-import {loadLayout} from '/common/common.js';
+import {rootUrl, loadLayout} from '/common/common.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
 });
 
-const rootUrl = 'http://127.0.0.1:8881'
 let isOpen = true;
 
 // 전역에 데이터 저장용 변수
