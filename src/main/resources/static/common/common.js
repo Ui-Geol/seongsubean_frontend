@@ -1,6 +1,6 @@
 import {updateAuthDisplay} from '/common/header.js';
 
-const rootUrl = 'http://127.0.0.1:8881';
+const rootUrl = 'http://43.200.1.181:8881';
 
 const common = axios.create({
   baseURL: rootUrl,
