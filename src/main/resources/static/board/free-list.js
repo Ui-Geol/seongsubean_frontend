@@ -49,56 +49,72 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchPosts(currentPage);
 });
 
-function fetchPosts(page) {
-    let url = rootUrl + `/api/freeboards/list/${page}/${pageSize}`;
+async function fetchPosts(page) {
+    let url = rootUrl+`/api/freeboards/list/${page}/${pageSize}`;
     if (searchKeyword && searchType) {
-        url = rootUrl + `/api/freeboards/search/${searchType}/${encodeURIComponent(searchKeyword)}/${page}/${pageSize}`;
+        url = rootUrl+`/api/freeboards/search?page=${page}&size=${pageSize}&type=${searchType}&keyword=${encodeURIComponent(searchKeyword)}`;
     }
 
-    axios.get(url)
-    .then(res => {
+    try {
+        const res = await axios.get(url);
         const data = res.data;
         const row = document.getElementById("card-row");
         row.innerHTML = "";
-        const posts = data.content || data;
 
+        const posts = data.content || data;
         if (!posts || posts.length === 0) {
             row.innerHTML = `<div class="col-12 text-center mt-4"><p class="text-muted">검색 결과가 없습니다.</p></div>`;
             document.querySelector(".pagination").innerHTML = "";
             return;
         }
 
-        posts.forEach(item => {
+        // ✅ 모든 이미지 요청을 병렬로 처리
+        const imageUrls = await Promise.all(posts.map(async (item) => {
+            if (!item.thumbnailImage) {
+                return '/images/board/free/default.png';
+            }
+
+            const imagePath = rootUrl+`/api/common${item.thumbnailImage}`;
+            try {
+                const imageRes = await axios.get(imagePath, { responseType: 'blob' });
+                return URL.createObjectURL(imageRes.data);
+            } catch (e) {
+                console.warn(`이미지 불러오기 실패: ${item.thumbnailImage}`, e);
+                return '/images/board/free/default.png';
+            }
+        }));
+
+        // ✅ 이미지 URL과 함께 카드 렌더링
+        posts.forEach((item, index) => {
             const card = document.createElement("div");
             card.className = "col-md-4";
-            const imagePath = item.thumbnailImage
-                ? (item.thumbnailImage.startsWith("/") ? item.thumbnailImage : `/images/board/${item.thumbnailImage}`)
-                : '/images/board/default.png';
+
             const authorName = item.nickName || '익명';
+            const imageUrl = imageUrls[index];
+
             card.innerHTML = `
-                    <div class="card" style="cursor: pointer;" onclick="location.href='/board/free-detail.html?id=${item.freeBoardId}'">
-                      <img src="${imagePath}" class="card-img-top" alt="게시글 이미지">
-                      <div class="card-body px-0">
-                        <h5 class="card-title">${item.title}</h5>
-                        <div class="d-flex justify-content-between">
-                          <span class="card-text">${authorName}</span>
-                          <span class="card-text">${formatDate(item.createdDate)}</span>
-                        </div>
-                      </div>
+                <div class="card" style="cursor: pointer;" onclick="location.href='/board/free-detail.html?id=${item.freeBoardId}'">
+                  <img src="${imageUrl}" class="card-img-top" alt="게시글 이미지">
+                  <div class="card-body px-0">
+                    <h5 class="card-title">${item.title}</h5>
+                    <div class="d-flex justify-content-between">
+                      <span class="card-text">${authorName}</span>
+                      <span class="card-text">${formatDate(item.createdDate)}</span>
                     </div>
-                `;
+                  </div>
+                </div>
+            `;
             row.appendChild(card);
         });
 
         const totalPages = data.totalPages || 1;
         renderPagination(totalPages, page);
-    })
-    .catch(err => {
+
+    } catch (err) {
         console.error("불러오기 실패", err);
         alert("데이터를 불러오지 못했습니다.");
-    });
+    }
 }
-
 function renderPagination(totalPages, currentPageLocal) {
     const pagination = document.querySelector(".pagination");
     pagination.innerHTML = '';
