@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const businessHoursInput = document.getElementById('businessHoursJson');
   const imageInput = document.getElementById('imageInput');
   const cancelBtn = document.getElementById('cancelBtn');
+  const submitBtn = document.getElementById('submitJsonBtn');
   const charCountSpan = document.getElementById('charCount');
 
   // 글자 카운터 업데이트
@@ -255,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   }
 
-  form.addEventListener('submit', async function (e) {
+  submitBtn.addEventListener('click', async function (e) {
     e.preventDefault();
 
     const cafeName = cafeNameInput.value.trim();
