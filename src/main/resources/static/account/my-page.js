@@ -12,7 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
   })
   .then(res => {
     const {nickName, image, isOauth} = res.data;
-    userImage.src = image;
+    if (!image) {
+      userImage.src = '/images/account/default.png';
+    }else {
+      userImage.src = image;
+    }
     userNickname.textContent = nickName;
 
     editBtn.addEventListener("click", (e) => {
