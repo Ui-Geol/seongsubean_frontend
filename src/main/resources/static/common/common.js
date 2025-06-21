@@ -1,5 +1,6 @@
 import {updateAuthDisplay} from '/common/header.js';
-const rootUrl = 'http://127.0.0.1:8881';
+
+const rootUrl = 'http://43.200.1.181:8881';
 
 const common = axios.create({
   baseURL: rootUrl,
@@ -9,6 +10,9 @@ const common = axios.create({
 });
 
 async function loadLayout() {
+  await checkToken();
+  const test = await isMine('hanni0616@gmail.com');
+  console.log(test);
   // Header와 Footer를 순차적으로 로드
   await loadFragment('header-container', '/common/header.html');
   await loadFragment('footer-container', '/common/footer.html');
@@ -33,6 +37,45 @@ async function loadFragment(containerId, filePath) {
     document.getElementById(containerId).innerHTML = html;
   } catch (error) {
     console.error(error);
+  }
+}
+
+async function checkToken() {
+  const token = localStorage.getItem('auth');
+  // POST 요청
+  if (token == 'null') {
+    return;
+  }
+
+  axios.post(rootUrl + '/api/jwt/validate-token', {}, {
+    headers: {
+      'Authorization': `${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => {
+    if (response.data === '만료') {
+      localStorage.removeItem('auth');
+    }
+  }).catch(error => {
+    console.log(error);
+  });
+
+}
+
+async function isMine(email) {
+  const token = localStorage.getItem('auth');
+  if (token == null) {
+    return false;
+  }
+  try {
+    const response = await axios.get(rootUrl + '/api/account/getEmail', {
+      headers: {'Authorization': `${token}`}
+    });
+    return response.data === email;
+  } catch (error) {
+    console.log(error);
+    return false;
   }
 }
 

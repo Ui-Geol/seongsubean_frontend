@@ -61,3 +61,6 @@ body {
     border: 1px solid #ddd;
     color: #333 !important;
 }
+.free-list-container .container.mb-4 {
+    margin-top: 90px;
+}

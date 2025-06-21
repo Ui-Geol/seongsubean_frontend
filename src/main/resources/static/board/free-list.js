@@ -1,4 +1,9 @@
-import { common, loadLayout, rootUrl } from '/common/common.js';
+import { loadLayout, rootUrl } from '/common/common.js';
+document.addEventListener("DOMContentLoaded", () => {
+    loadLayout();
+
+    const searchBtn = document.querySelector("#searchButton");
+});
 
 let currentPage = 1;
 const pageSize = 12;
@@ -6,7 +11,6 @@ let searchKeyword = null;
 let searchType = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadLayout();
     const searchBtn = document.querySelector("#searchButton");
     const dropdownBtn = document.querySelector(".dropdown-toggle");
     const searchInput = document.querySelector("#searchInput");
@@ -46,13 +50,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function fetchPosts(page) {
-    let url = `/api/freeboards/list?page=${page}&size=${pageSize}`;
+    let url = rootUrl+`/api/freeboards/list/${page}/${pageSize}`;
     if (searchKeyword && searchType) {
-        url = `/api/freeboards/search?page=${page}&size=${pageSize}&type=${searchType}&keyword=${encodeURIComponent(searchKeyword)}`;
+        url = rootUrl+`/api/freeboards/search?page=${page}&size=${pageSize}&type=${searchType}&keyword=${encodeURIComponent(searchKeyword)}`;
     }
 
     try {
-        const res = await common.get(url);
+        const res = await axios.get(url);
         const data = res.data;
         const row = document.getElementById("card-row");
         row.innerHTML = "";
@@ -64,15 +68,15 @@ async function fetchPosts(page) {
             return;
         }
 
-        // ✅ 이미지 blob 처리
+        // ✅ 모든 이미지 요청을 병렬로 처리
         const imageUrls = await Promise.all(posts.map(async (item) => {
             if (!item.thumbnailImage) {
                 return '/images/board/free/default.png';
             }
 
-            const imagePath = `${rootUrl}/api/common${item.thumbnailImage}`;
+            const imagePath = rootUrl+`/api/common${item.thumbnailImage}`;
             try {
-                const imageRes = await common.get(imagePath, { responseType: 'blob' });
+                const imageRes = await axios.get(imagePath, { responseType: 'blob' });
                 return URL.createObjectURL(imageRes.data);
             } catch (e) {
                 console.warn(`이미지 불러오기 실패: ${item.thumbnailImage}`, e);
@@ -80,7 +84,7 @@ async function fetchPosts(page) {
             }
         }));
 
-        // ✅ 카드 렌더링
+        // ✅ 이미지 URL과 함께 카드 렌더링
         posts.forEach((item, index) => {
             const card = document.createElement("div");
             card.className = "col-md-4";
@@ -111,7 +115,6 @@ async function fetchPosts(page) {
         alert("데이터를 불러오지 못했습니다.");
     }
 }
-
 function renderPagination(totalPages, currentPageLocal) {
     const pagination = document.querySelector(".pagination");
     pagination.innerHTML = '';

@@ -1,3 +1,5 @@
+import {rootUrl} from "/common/common.js";
+
 document.addEventListener('DOMContentLoaded', async function () {
   // 경로에서 카페 ID 추출 (수정 모드 판단)
   const pathParts = window.location.pathname.split('/');
@@ -19,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const businessHoursInput = document.getElementById('businessHoursJson');
   const imageInput = document.getElementById('imageInput');
   const cancelBtn = document.getElementById('cancelBtn');
+  const submitBtn = document.getElementById('submitJsonBtn');
   const charCountSpan = document.getElementById('charCount');
 
   // 글자 카운터 업데이트
@@ -253,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   }
 
-  form.addEventListener('submit', async function (e) {
+  submitBtn.addEventListener('click', async function (e) {
     e.preventDefault();
 
     const cafeName = cafeNameInput.value.trim();
@@ -262,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const detailAddress = detailAddressInput.value.trim();
     const callNumber = callNumberInput.value.trim();
     const introduction = introductionInput.value.trim();
-    const businessHours = collectBusinessHours();
+    const operationTimes = collectBusinessHours();
 
     // 디버깅: 수집된 데이터 확인
     console.log('=== 폼 데이터 확인 ===');
@@ -272,7 +275,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     console.log('detailAddress:', detailAddress);
     console.log('callNumber:', callNumber);
     console.log('introduction:', introduction);
-    console.log('businessHours:', businessHours);
+    console.log('operationTimes:', operationTimes);
 
     // 유효성 검사
     if (!cafeName) {
@@ -291,11 +294,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       alert('전화번호를 입력해주세요.');
       return;
     }
-    if (introduction.length > 300) {
-      alert('소개는 300자 이하로 작성해주세요.');
+    if (introduction.length > 301) {
+      alert('소개는 301자 이하로 작성해주세요.');
       return;
     }
-    if (businessHours.length === 0) {
+    if (operationTimes.length === 1) {
       alert('영업시간을 하나 이상 설정해주세요.');
       return;
     }
@@ -307,7 +310,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     try {
-      // 이미지를 Base64로 변환
 
       // JSON 데이터 객체 생성
       const requestData = {
@@ -317,8 +319,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         detailAddress,
         callNumber,
         introduction,
-        businessHours,
-        image: files[0].name
+        operationTimes,
+        mainImage: files[0].name
       };
 
       console.log('=== 전송할 JSON 데이터 ===');
@@ -330,16 +332,18 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.log('=== 요청 정보 ===');
       console.log('URL:', url);
       console.log('Method:', method);
+      console.log(rootUrl);
 
       console.log('=== 요청 전송 시작 ===');
 
       // Axios를 사용한 JSON 전송
       const response = await axios({
         method: method,
-        url: '127.0.0.1:8881' + url,
+        url: rootUrl + url,
         data: requestData,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('auth')
         }
       });
 
@@ -348,15 +352,12 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.log('Response Data:', response.data);
 
       // 성공 처리
-      if (cafeId && response.data.updated) {
-        alert('카페 정보가 수정되었습니다!');
-        location.href = `/cafe/${cafeId}`;
-      } else if (!cafeId && response.data.success) {
+      const responseCafeId = response.data;
+      if (responseCafeId) {
         alert('카페가 등록되었습니다!');
-        location.href = `/cafe/${response.data.id}`;
+        location.href = `/cafe/cafe-detail.html?cafeId=` + responseCafeId;
       } else {
-        console.warn('예상치 못한 응답:', response.data);
-        alert('처리에 실패했습니다: ' + (response.data.message || '알 수 없는 오류'));
+        alert('카페 등록에 실패했습니다.');
       }
 
     } catch (err) {
@@ -365,7 +366,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       if (err.response) {
         // 서버가 응답했지만 오류 상태 코드
         console.error('서버 오류:', err.response.status, err.response.data);
-        const errorMessage = err.response.data.message || err.response.data.error ||
+        const errorMessage = err.response.data.message
+            || err.response.data.error ||
             `HTTP ${err.response.status} 에러가 발생했습니다.`;
         alert('서버 에러: ' + errorMessage);
       } else if (err.request) {
