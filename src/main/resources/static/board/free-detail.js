@@ -1,11 +1,11 @@
-import { loadLayout, rootURL } from '/common/common.js';
+import { loadLayout, rootUrl } from '/common/common.js';
 
 let freeBoardId = null;
 let loginUserEmail = '';
 
 async function fetchLoginEmail() {
     try {
-        const res = await common.get(`${rootURL}/api/freeboards/auth/email`);
+        const res = await axios.get(rootUrl+'/api/freeboards/auth/email');
         if (res.data.success) {
             loginUserEmail = res.data.email;
         }
@@ -22,12 +22,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('delete-btn')?.addEventListener('click', deleteHandler);
     document.getElementById('edit-btn')?.addEventListener('click', () => {
         if (freeBoardId) {
-            window.location.href = `/board/free-post.html?id=${freeBoardId}`;
+            window.location.href = rootUrl+`/board/free-post.html?id=${freeBoardId}`;
         }
     });
 
     try {
-        const res = await common.get(`${rootURL}/api/freeboards/detail/${freeBoardId}`);
+        const res = await axios.get(rootUrl+`/api/freeboards/detail/${freeBoardId}`);
         const data = res.data;
         await fetchLoginEmail();
 
@@ -48,12 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const imageContainer = document.getElementById('image-container');
         imageContainer.innerHTML = '';
+
         for (const imgName of (data.images || [])) {
             if (imgName === 'default.png') continue;
             try {
-                const imagePath = `${rootURL}/api/common${imgName.startsWith('/') ? '' : '/'}${imgName}`;
+                const imagePath = rootUrl+`/api/common${imgName.startsWith('/') ? '' : '/'}${imgName}`;
                 const imageRes = await axios.get(imagePath, { responseType: 'blob' });
                 const imageUrl = URL.createObjectURL(imageRes.data);
+
                 const imgTag = document.createElement('img');
                 imgTag.src = imageUrl;
                 imgTag.classList.add('post-image');
@@ -65,10 +67,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const avatar = document.getElementById('author-avatar');
-        let profileImageUrl = `${rootURL}/images/board/SampleProfile.png`;
+        let profileImageUrl = rootUrl+'/images/board/SampleProfile.png';
+
         if (data.profileImage) {
             try {
-                const imageRes = await axios.get(`${rootURL}/api/common${data.profileImage.startsWith('/') ? '' : '/'}${data.profileImage}`, {
+                const imageRes = await axios.get(rootUrl+`/api/common${data.profileImage.startsWith('/') ? '' : '/'}${data.profileImage}`, {
                     responseType: 'blob'
                 });
                 profileImageUrl = URL.createObjectURL(imageRes.data);
@@ -76,6 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.warn('작성자 프로필 이미지 로딩 실패:', err);
             }
         }
+
         avatar.innerHTML = `<img src="${profileImageUrl}" class="avatar-img">`;
 
     } catch (err) {
@@ -90,7 +94,7 @@ async function deleteHandler() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-        const res = await common.delete(`${rootURL}/api/freeboards/${freeBoardId}`);
+        const res = await axios.delete(`/api/freeboards/detail/${freeBoardId}`);
         if (res.data.deleted) {
             alert("삭제되었습니다.");
             window.location.href = `/board/free-list.html?ts=${Date.now()}`;
@@ -112,12 +116,12 @@ function formatDate(dateStr) {
 async function loadComments() {
     let currentUserEmail = '';
     try {
-        const userRes = await common.get(`${rootURL}/api/freeboards/auth/email`);
+        const userRes = await axios.get(rootUrl+'/api/freeboards/auth/email');
         currentUserEmail = userRes.data.email;
     } catch {}
 
     try {
-        const res = await common.get(`${rootURL}/api/freeboards/comment/${freeBoardId}`);
+        const res = await axios.get(rootUrl+`/api/freeboards/comment/${freeBoardId}`);
         const comments = res.data;
 
         const commentList = document.querySelector(".comment-list");
@@ -128,7 +132,7 @@ async function loadComments() {
             item.className = "comment-item";
             item.innerHTML = `
               <div class="comment-avatar">
-                <img src="${comment.profileImage || `${rootURL}/images/board/SampleProfile.png`}" class="avatar-img">
+                <img src="${comment.profileImage || rootUrl+'/images/board/SampleProfile.png'}" class="avatar-img">
               </div>
               <div class="comment-content">
                 <div class="comment-header">
@@ -147,7 +151,7 @@ async function loadComments() {
             btn.addEventListener("click", async () => {
                 const id = btn.dataset.id;
                 if (confirm("댓글을 삭제하시겠습니까?")) {
-                    await common.delete(`${rootURL}/api/freeboards/comment/${id}`);
+                    await axios.delete(rootUrl+`/api/freeboards/comment/${id}`);
                     alert("댓글이 삭제되었습니다.");
                     location.reload();
                 }
@@ -167,7 +171,7 @@ document.querySelector(".comment-submit")?.addEventListener("click", async () =>
     formData.append("freeBoardId", freeBoardId);
 
     try {
-        const res = await common.post(`${rootURL}/api/freeboards/comment`, formData);
+        const res = await axios.post(rootUrl+"/api/freeboards/comment", formData);
         if (res.data.success) {
             alert("댓글이 등록되었습니다.");
             location.reload();
