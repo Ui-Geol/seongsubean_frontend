@@ -53,6 +53,22 @@ async function fetchAndRenderList() {
 
 document.addEventListener('DOMContentLoaded', fetchAndRenderList);
 loadLayout();
+// 로그인한 경우만 '새 글쓰기' 버튼 표시
+const token = localStorage.getItem('auth');
+if (token) {
+  try {
+    const res = await axios.get(rootUrl + '/api/freeboards/auth/email', {
+      headers: {
+        Authorization: token
+      }
+    });
+    if (res.data.success) {
+      document.getElementById('new-post-btn').style.display = 'inline-block';
+    }
+  } catch (err) {
+    console.warn('인증 확인 실패:', err);
+  }
+}
 function renderReportList() {
   const container = document.querySelector('.article-list');
   container.innerHTML = '';
