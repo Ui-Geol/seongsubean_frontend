@@ -11,6 +11,14 @@ body {
   line-height: 1.6;
 }
 
+#main-container {
+  max-width: 60%;
+  margin: 0 auto;
+  background: white;
+  min-height: 70vh;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 .cafe-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -28,6 +36,45 @@ body {
   font-weight: 600;
   margin-bottom: 12px;
   color: #2c3e50;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 24px; /* cafe 이름과 같은 크기 */
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+}
+
+.icon-button:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+.icon-button:active {
+  transform: scale(0.95);
+}
+
+.icon-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* 개별 버튼 호버 색상 */
+#editCafe:hover {
+  background-color: #e3f2fd;
+}
+
+#deleteCafe:hover {
+  background-color: red;
 }
 
 .rating-container {
@@ -415,7 +462,7 @@ body {
   text-decoration: none;
   color: #dc3545;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: background 0.2s ease;
 }
 
@@ -443,6 +490,12 @@ body {
 
 .review-write-btn:hover {
   background-color: #0056b3;
+}
+
+.menu-list,
+.review-list {
+  padding: 20px 40px;
+  margin: 0 20px;
 }
 
 @media (max-width: 768px) {

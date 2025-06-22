@@ -1,4 +1,10 @@
-import {loadLayout, rootUrl} from '/common/common.js';
+import {
+  closeModal,
+  initializeModal,
+  loadLayout,
+  openModal,
+  rootUrl
+} from '/common/common.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
@@ -517,7 +523,80 @@ async function handleMoreButtonClick(e) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadLayout(); // ✅ header/footer 삽입
-  setCafeHeader()
+// 삭제 버튼 이벤트 설정
+function setupDeleteButton() {
+  const deleteButton = document.getElementById('deleteCafe');
+
+  if (deleteButton) {
+    deleteButton.addEventListener('click', function () {
+      // 카페 삭제 모달 열기
+      openModal('/cafe/cafe-delete-modal.html');
+    });
+  } else {
+    console.warn('삭제 버튼을 찾을 수 없습니다.');
+  }
+}
+
+// 모달 이벤트 핸들러 설정
+function setupModalEventHandlers() {
+  // 모달 확인 버튼 클릭 시 처리
+  document.addEventListener('modalConfirm', function (event) {
+    const {buttonType} = event.detail;
+
+    if (buttonType.includes('delete-btn')) {
+      handleCafeDelete();
+    }
+  });
+}
+
+// 카페 삭제 처리
+async function handleCafeDelete() {
+
+  try {
+    // 로딩 표시 (선택사항)
+    showLoadingInModal();
+
+    const response = await axios.delete(rootUrl + `/api/cafe/` + cafeId);
+    console.log(cafeId);
+
+    if (response.status === 204) {
+      // 목록 페이지로 이동
+      window.location.href = '/';
+    } else {
+      throw new Error('삭제 요청이 실패했습니다.');
+    }
+
+  } catch (error) {
+    console.error('카페 삭제 실패:', error);
+
+    // 에러 메시지 표시
+    alert('카페 삭제 중 오류가 발생했습니다.\n다시 시도해주세요.');
+
+  } finally {
+    closeModal();
+  }
+}
+
+// 모달에 로딩 표시 (선택사항)
+function showLoadingInModal() {
+  const modalContainer = document.getElementById('modalContainer');
+  if (modalContainer) {
+    modalContainer.innerHTML = `
+            <div style="padding: 40px; text-align: center;">
+                <div style="margin-bottom: 20px;">⏳</div>
+                <p>카페를 삭제하는 중...</p>
+            </div>
+        `;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadLayout();
+
+  setCafeHeader();
+
+  await initializeModal();
+
+  setupDeleteButton();
+  setupModalEventHandlers();
 });
