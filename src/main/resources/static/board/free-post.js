@@ -94,19 +94,31 @@ document.addEventListener('DOMContentLoaded', async function () {
         const url = freeBoardId ? rootUrl+`/api/freeboards/post/${freeBoardId}` : rootUrl+'/api/freeboards';
         const method = freeBoardId ? 'put' : 'post';
 
+
+        const token = localStorage.getItem('auth'); // ✅ 토큰 가져오기
+
         try {
-            const response = await common[method](url, method === 'post' ? formData : {
-                title,
-                content: contentHtml
+            const response = await axios({ // ✅ axios 직접 구성
+                method,
+                url,
+                data: method === 'post' ? formData : {
+                    title,
+                    content: contentHtml
+                },
+                headers: {
+                    Authorization: token
+                }
             });
 
             const result = response.data;
             if (freeBoardId && result.updated) {
                 alert('게시글이 수정되었습니다!');
-                location.href = `/board/freeboards/detail/${freeBoardId}`;
+                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                window.location.href = detailUrl;
             } else if (!freeBoardId && result.success) {
                 alert('게시글이 등록되었습니다!');
-                location.href = `/board/freeboards/detail/${result.id}`;
+                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                window.location.href = detailUrl;
             } else {
                 alert('처리에 실패했습니다.');
             }
