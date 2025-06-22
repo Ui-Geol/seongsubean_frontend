@@ -1,7 +1,8 @@
-import { loadLayout, rootURL } from '/common/common.js';
+import { loadLayout, rootUrl } from '/common/common.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
     loadLayout();
+
     const editor = new toastui.Editor({
         el: document.querySelector('#editor'),
         height: '500px',
@@ -10,9 +11,29 @@ document.addEventListener('DOMContentLoaded', async function () {
         language: 'ko'
     });
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const reportId = urlParams.get("id");
-    const isEdit = !!reportId;
+    // 글자 수 카운터
+    const counter = document.createElement('div');
+    counter.className = 'char-count';
+    counter.style.marginTop = '8px';
+    counter.style.fontSize = '14px';
+    counter.style.color = '#666';
+    counter.textContent = '0 / 2000자';
+    document.querySelector('#editor').after(counter);
+
+    editor.on('change', function () {
+        const html = editor.getHTML();
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        const length = plainText.length;
+        counter.textContent = `${length} / 2000자`;
+        counter.style.color = (length > 2000) ? '#dc3545' : '#666';
+    });
+
+    const pathParts = window.location.pathname.split('/');
+    const last = pathParts[pathParts.length - 1];
+    const isEdit = /^\d+$/.test(last);
+    const reportId = isEdit ? parseInt(last, 10) : null;
 
     const form = document.getElementById('report-form');
     const titleInput = document.getElementById('title');
@@ -27,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (isEdit) {
         try {
-            const res = await common.get(`${rootURL}/api/reportboards/detail/${reportId}`);
+            const res = await axios.get(`${rootUrl}/api/reportboards/detail/${reportId}`);
             const data = res.data;
             titleInput.value = data.title;
             editor.setHTML(data.content);
@@ -42,6 +63,19 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const title = titleInput.value.trim();
         const contentHtml = editor.getHTML();
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = contentHtml;
+        const plainText = tempElement.textContent || tempElement.innerText || '';
+
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+        if (plainText.length > 2000) {
+            alert('본문은 2000자 이하로 작성해주세요.');
+            return;
+        }
+
         contentInput.value = contentHtml;
 
         const imageInput = document.getElementById('images');
@@ -52,20 +86,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
+        const formData = new FormData(form);
+        const url = isEdit ? `${rootUrl}/api/reportboards/post/${reportId}` : `${rootUrl}/api/reportboards`;
+        const method = isEdit ? 'put' : 'post';
+
         try {
-            let response;
-            if (isEdit) {
-                response = await common.put(
-                    `${rootURL}/api/reportboards/post/${reportId}`,
-                    {
-                        title,
-                        content: contentHtml
-                    }
-                );
-            } else {
-                const formData = new FormData(form);
-                response = await common.post(`${rootURL}/api/reportboards`, formData);
-            }
+            const response = await common[method](url, method === 'post' ? formData : {
+                title,
+                content: contentHtml
+            });
 
             const result = response.data;
             if (isEdit && result.updated) {
