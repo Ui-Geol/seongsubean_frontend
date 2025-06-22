@@ -1,89 +1,119 @@
+/* Bootstrap과 충돌 방지를 위한 더 구체적인 선택자와 !important 사용 */
+.navbar.navbar-custom,
 .navbar-custom {
-  background-color: #ffffff;
-  border-bottom: 1px solid #8a6534;
-  font-family: 'Noto Sans KR', sans-serif;
-  height: 70px;
-  display: flex;
-  align-items: center;
-  padding: 0;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #8a6534 !important;
+  font-family: 'Noto Sans KR', sans-serif !important;
+  height: 70px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  min-height: 70px !important;
 }
 
-.header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+.navbar-custom .header-inner {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
 }
 
 /* 로고 영역 */
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
+.navbar-custom .header-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.8rem !important;
+  margin-right: 2rem !important;
 }
 
-.logo-icon {
-  height: 60px;
+.navbar-custom .logo-icon {
+  height: 60px !important;
 }
 
-.logo-text {
-  height: 36px;
-  margin-top: 10px;
+.navbar-custom .logo-text {
+  height: 36px !important;
+  margin-top: 10px !important;
 }
 
 /* 메뉴 중앙 정렬 */
-.header-center {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: flex-start;
-  align-items: center;
-  list-style: none;
-  margin: 10px;
-  padding: 0px;
-  flex: 1;
+.navbar-custom .header-center {
+  display: flex !important;
+  gap: 1.5rem !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  list-style: none !important;
+  margin: 10px !important;
+  padding: 0px !important;
+  flex: 1 !important;
 }
 
-.nav-link {
-  color: #6b4f1d;
-  font-size: 1.1rem;
-  font-weight: 500;
-  text-decoration: none;
+.navbar-custom .nav-link {
+  color: #6b4f1d !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-.nav-link:hover {
-  color: #8a6534;
+.navbar-custom .nav-link:hover {
+  color: #8a6534 !important;
 }
 
 /* 로그인 버튼 */
-.header-right {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.navbar-custom .header-right {
+  display: flex !important;
+  gap: 10px !important;
+  align-items: center !important;
 }
 
-.authenticated form {
-  display: none;
-  margin: 0;
+.navbar-custom .authenticated form {
+  display: none !important;
+  margin: 0 !important;
 }
 
-.btn-login {
-  background-color: #93653B;
-  color: white;
-  border: none;
-  border-radius: 1.5rem;
-  padding: 0.4rem 1.2rem;
-  font-size: 0.95rem;
-  text-decoration: none;
-  display: inline-block;
-  cursor: pointer;
-  white-space: nowrap;
+.navbar-custom .btn-login {
+  background-color: #93653B !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 1.5rem !important;
+  padding: 0.4rem 1.2rem !important;
+  font-size: 0.95rem !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
 }
 
-.btn-login:hover {
-  background-color: #7a4e2c;
-  color: #fff;
+.navbar-custom .btn-login:hover {
+  background-color: #7a4e2c !important;
+  color: #fff !important;
 }
 
-.unauthenticated {
-  display: inline-block;
+.navbar-custom .unauthenticated {
+  display: inline-block !important;
+}
+
+/* Bootstrap navbar 기본 스타일 리셋 */
+.navbar-custom.navbar {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.navbar-custom .navbar-nav {
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-direction: row !important;
+}
+
+.navbar-custom .navbar-collapse {
+  flex-basis: auto !important;
+  flex-grow: 0 !important;
+}
+
+.navbar-custom .navbar-brand {
+  margin: 0 !important;
+  padding: 0 !important;
 }
