@@ -1,4 +1,4 @@
-import { loadLayout, rootURL } from '/common/common.js';
+import { loadLayout, rootUrl } from '/common/common.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
     loadLayout();
@@ -28,9 +28,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         counter.style.color = (length > 2000) ? '#dc3545' : '#666';
     });
 
-    const params = new URLSearchParams(location.search);
-    const freeBoardId = params.get("id");
-    const isEdit = !!freeBoardId;
+    const pathParts = window.location.pathname.split('/');
+    const last = pathParts[pathParts.length - 1];
+    const isEdit = /^\d+$/.test(last);
+    const freeBoardId = isEdit ? parseInt(last, 10) : null;
 
     const form = document.getElementById('free-form');
     const titleInput = document.getElementById('title');
@@ -40,13 +41,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            window.location.href = '/board/free-list.html';
+            window.location.href = '/board/freeboards/free-list.html';
         });
     }
 
     if (isEdit) {
         try {
-            const res = await common.get(`${rootURL}/api/freeboards/detail/${freeBoardId}`);
+            const res = await axios.get(rootUrl+`/api/freeboards/${freeBoardId}`);
             const data = res.data;
             titleInput.value = data.title;
             editor.setHTML(data.content);
@@ -89,29 +90,35 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
+        const formData = new FormData(form);
+        const url = freeBoardId ? rootUrl+`/api/freeboards/post/${freeBoardId}` : rootUrl+'/api/freeboards';
+        const method = freeBoardId ? 'put' : 'post';
+
+
+        const token = localStorage.getItem('auth'); // ✅ 토큰 가져오기
+
         try {
-            let response;
-            if (isEdit) {
-                response = await common.put(
-                    `${rootURL}/api/freeboards/post/${freeBoardId}`,
-                    {
-                        headWord,
-                        title,
-                        content: contentHtml
-                    }
-                );
-            } else {
-                const formData = new FormData(form);
-                response = await common.post(`${rootURL}/api/freeboards`, formData);
-            }
+            const response = await axios({ // ✅ axios 직접 구성
+                method,
+                url,
+                data: method === 'post' ? formData : {
+                    title,
+                    content: contentHtml
+                },
+                headers: {
+                    Authorization: token
+                }
+            });
 
             const result = response.data;
-            if (isEdit && result.updated) {
+            if (freeBoardId && result.updated) {
                 alert('게시글이 수정되었습니다!');
-                location.href = `/board/free-detail.html?id=${freeBoardId}`;
-            } else if (!isEdit && result.success) {
+                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                window.location.href = detailUrl;
+            } else if (!freeBoardId && result.success) {
                 alert('게시글이 등록되었습니다!');
-                location.href = `/board/free-detail.html?id=${result.id}`;
+                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                window.location.href = detailUrl;
             } else {
                 alert('처리에 실패했습니다.');
             }
