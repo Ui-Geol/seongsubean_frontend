@@ -28,8 +28,9 @@
               style="display: none"
           />
           <label for="profile-upload">
-            <img id="profile-img" src="/images/common/default.png" alt="프로필 이미지"
-                class="rounded-circle profile-img" style="width: 100px; height: 100px; object-fit: cover; cursor: pointer"
+            <img id="profile-img" src="/images/account/default.png" alt="프로필 이미지"
+                 class="rounded-circle profile-img"
+                 style="width: 100px; height: 100px; object-fit: cover; cursor: pointer"
             />
           </label>
         </div>
@@ -39,25 +40,29 @@
         <div class="form-section">
           <div class="form-row mb-3">
             <label for="email" class="form-label">이메일</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="이메일을 입력하세요" readonly/>
+            <input type="email" class="form-control" id="email" name="email"
+                   placeholder="이메일을 입력하세요" readonly/>
           </div>
 
           <div class="form-row mb-3">
             <label for="nickname" class="form-label">닉네임</label>
-            <input type="text" class="form-control" id="nickname" name="newNickName" placeholder="닉네임을 입력하세요" maxlength="20"/>
-            <div id="nickname-feedback" class="text-danger small mt-1"></div>
+            <input type="text" class="form-control" id="nickname" name="newNickName"
+                   placeholder="닉네임을 입력하세요" maxlength="20"/>
           </div>
+          <div id="nickname-feedback" class="text-danger small mt-1"></div>
 
           <div class="form-row mb-3">
             <label for="password" class="form-label">비밀 번호</label>
-            <input type="password" class="form-control" id="password" name="newPassword" placeholder="새 비밀번호를 입력하세요"/>
+            <input type="password" class="form-control" id="password" name="newPassword"
+                   placeholder="새 비밀번호를 입력하세요"/>
           </div>
 
           <div class="form-row mb-3">
             <label for="password-confirm" class="form-label">비밀 번호 확인</label>
-            <input type="password" class="form-control" id="password-confirm" name="passwordConfirm" placeholder="비밀번호를 다시 입력하세요"/>
-            <div id="password-feedback" class="text-danger small"></div>
+            <input type="password" class="form-control" id="password-confirm" name="passwordConfirm"
+                   placeholder="비밀번호를 다시 입력하세요"/>
           </div>
+          <div id="password-feedback" class="text-danger small"></div>
         </div>
 
         <div class="btn-group">
@@ -71,7 +76,7 @@
     </div>
   </div>
 </div>
-<script src="edit-profile.js"></script>
-<script src="my-page.js"></script>
+<script type="module" src="edit-profile.js"></script>
+<script type="module" src="my-page.js"></script>
 </body>
 </html>
