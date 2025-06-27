@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function fetchCafeImages(cafes) {
     return await Promise.all(cafes.map(async (cafe) => {
       if (!cafe.mainImage) {
-        return '/images/cafe/default.png'; // 기본 이미지
+        return '/images/cafe/menuDefault.png'; // 기본 이미지
       }
 
       const imageUrl = rootUrl + `/api/common${cafe.mainImage}`;
@@ -240,89 +240,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return URL.createObjectURL(res.data);
       } catch (err) {
         console.warn(`이미지 불러오기 실패: ${cafe.mainImage}`, err);
-        return '/images/board/free/default.png';
+        return '/images/board/free/menuDefault.png';
       }
     }));
   }
 
-
-  function initCardView() {
-    const ROW_SIZE = 4;      // 한 줄에 보여줄 카드 수
-    let currentIndex = 0;    // 다음에 렌더링할 데이터 시작 인덱스
-    let cafes = [];          // ← 여기에 API로 받은 데이터가 들어갑니다
-
-    const wrapper = document.getElementById('cards-wrapper');
-    const btn = document.getElementById('load-more');
-
-    if (!wrapper || !btn) {
-      console.error('카드 뷰 요소를 찾을 수 없습니다.');
-      return;
-    }
-
-    // ─── 1. API 호출: cafes에 데이터 채우고 첫 줄 렌더링 ───
-    axios.get( rootUrl + '/api/main/cards')
-    .then(async res => {
-      cafes = res.data;
-
-      // 🔽 mainImage → resolvedImageUrl 변환
-      const imageUrls = await fetchCafeImages(cafes);
-      cafes.forEach((cafe, idx) => {
-        cafe.resolvedImageUrl = imageUrls[idx];
-      });
-
-      btn.style.display = cafes.length > ROW_SIZE ? 'block' : 'none';
-      renderRow();
-    })
-    .catch(err => console.error('메인 카드 로딩 실패', err));
-
-    // 카드 한 줄(row) 렌더링 함수
-    function renderRow() {
-      if (currentIndex >= cafes.length) {
-        btn.style.display = 'none';
-        return;
-      }
-      const row = document.createElement('div');
-      row.className = 'card-row';
-
-      // ROW_SIZE 개씩 자르고 남으면 남은 개수만큼
-      const slice = cafes.slice(currentIndex, currentIndex + ROW_SIZE);
-
-      slice.forEach(cafe => {
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        card.dataset.cafeId = cafe.cafeId;
-        card.innerHTML = `
-        <img src="${cafe.resolvedImageUrl}" alt="${cafe.cafeName}">
-          <div class="info">
-            <h4>${cafe.cafeName}</h4>
-              <p>${cafe.introduction || ''}</p>
-          </div>
-`;
-
-        card.addEventListener('click', () => {
-          const cafeId = card.dataset.cafeId;
-          // /cafes/{cafeId} 로 이동해서 서버 측에서 Thymeleaf 페이지(카페 상세) 렌더링하게 함
-          window.location.href = `../cafe/cafe-detail.html?cafeId=${cafeId}`;
-        });
-
-        row.appendChild(card);
-      });
-
-      wrapper.appendChild(row);
-      currentIndex += ROW_SIZE;
-
-      // 더 이상 남는 데이터 없으면 버튼 숨김
-      if (currentIndex >= cafes.length) {
-        btn.style.display = 'none';
-      }
-    }
-
-    // 더보기 버튼 클릭 이벤트
-    btn.addEventListener('click', renderRow);
-
-    // 카페 등록 버튼 클릭 시 이동 (중복 제거됨)
-  }
 
   function initKakaoMapWithRetry() {
     console.log(
@@ -349,6 +271,73 @@ document.addEventListener("DOMContentLoaded", () => {
     // 100ms 후 다시 시도
     setTimeout(initKakaoMapWithRetry, 100);
   }
+
+
+  function initCardView() {
+    const wrapper = document.getElementById('cards-wrapper');
+    const btn = document.getElementById('load-more');
+    let currentPage = 1;
+
+    if (!wrapper || !btn) {
+      console.error('카드 뷰 요소를 찾을 수 없습니다.');
+      return;
+    }
+
+    async function renderRow() {
+      try {
+        const res = await axios.get(`${rootUrl}/api/main/cards?page=${currentPage}`);
+        const cafes = res.data;
+
+        if (!Array.isArray(cafes) || cafes.length === 0) {
+          btn.style.display = 'none';
+          return;
+        }
+
+        const imageUrls = await fetchCafeImages(cafes);
+        cafes.forEach((cafe, idx) => {
+          cafe.resolvedImageUrl = imageUrls[idx];
+        });
+
+        const row = document.createElement('div');
+        row.className = 'card-row';
+
+        cafes.forEach(cafe => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.dataset.cafeId = cafe.cafeId;
+          card.innerHTML = `
+          <img src="${cafe.resolvedImageUrl}" alt="${cafe.cafeName}">
+          <div class="info">
+            <h4>${cafe.cafeName}</h4>
+            <p>${cafe.introduction || ''}</p>
+          </div>
+        `;
+
+          card.addEventListener('click', () => {
+            window.location.href = `../cafe/cafe-detail.html?cafeId=${cafe.cafeId}`;
+          });
+
+          row.appendChild(card);
+        });
+
+        wrapper.appendChild(row);
+
+        if (cafes.length < 4) {
+          btn.style.display = 'none';
+        }
+
+        currentPage += 1;
+
+      } catch (err) {
+        console.error('카페 카드 로딩 실패:', err);
+        btn.style.display = 'none';
+      }
+    }
+
+    renderRow();
+    btn.addEventListener('click', renderRow);
+  }
+
 
   // DOMContentLoaded 이벤트에서 초기화 시작
   function init() {
