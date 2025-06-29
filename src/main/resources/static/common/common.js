@@ -11,8 +11,6 @@ const common = axios.create({
 
 async function loadLayout() {
   await checkToken();
-  const test = await isMine('hanni0616@gmail.com');
-  console.log(test);
   // Header와 Footer를 순차적으로 로드
   await loadFragment('header-container', '/common/header.html');
   await loadFragment('footer-container', '/common/footer.html');
@@ -269,5 +267,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
 export {
   common, rootUrl, loadLayout, initializeModal,
-  openModal, closeModal, closeModalOnOverlay, setupModalEvents,
+  openModal, closeModal, closeModalOnOverlay, setupModalEvents, isMine
 };

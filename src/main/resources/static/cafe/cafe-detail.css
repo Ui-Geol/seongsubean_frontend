@@ -400,6 +400,37 @@ body {
   border: none !important;
 }
 
+.menu-btn-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding-right: 60px;
+}
+
+.add-menu-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.add-menu-btn:hover {
+  background-color: #0056b3;
+}
+
+.plus-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
 .menu-item {
   position: relative;
   padding: 20px 0;
