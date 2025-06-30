@@ -2,66 +2,43 @@
 <html lang="ko">
 <head>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seongsu Bean - 내 카페</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seongsu Bean - 내가 쓴 글</title>
   <link rel="stylesheet" href="my-cafe.css"/>
+  <link rel="stylesheet" href="/common/header.css">
+  <link rel="stylesheet" href="/common/footer.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<!-- 메인 콘텐츠 -->
+<div id="header-container"></div>
+
 <div class="main-content">
   <div class="container">
     <div class="row">
       <div class="col-12">
-        <h1 class="page-title"></h1>
-        <!-- 카페 그리드 -->
-        <!-- 카페 카드 그리드 -->
-        <div class="cafe-grid row row-cols-1 row-cols-md-3 g-4">
-          <div class="col">
-            <a class="text-decoration-none text-dark">
-              <div class="cafe-card card h-100">
-                <img
-                    src="/images/common/logo.png"
-                    class="card-img-top cafe-image" alt="카페 이미지">
-                <div class="card-body cafe-info">
-                  <h5 class="card-title cafe-name"></h5>
-                  <p class="card-text cafe-address"></p>
-                  <div class="cafe-rating">
-                    <span class="rating-score"></span>
-                    <div class="stars">
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star"></i>
-                    </div>
-                    <span class="review-count"></span>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
+        <h1 class="page-title" id="page-title"></h1>
+
+        <!-- 카페 카드 그리드 (비워둠) -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" id="cafe-grid">
+          <!-- JS로 동적 렌더링 -->
         </div>
+
         <!-- 페이지네이션 -->
         <div class="pagination-container text-center">
           <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-              <li class="page-item">
-                <a class="page-link" aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-                </a>
-              </li>
-              <li class="page-item">
-                <a class="page-link">1</a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-                </a>
-              </li>
+            <ul class="pagination justify-content-center" id="pagination">
+              <!-- JS로 생성 -->
             </ul>
           </nav>
         </div>
+
       </div>
     </div>
   </div>
 </div>
+
+<div id="footer-container"></div>
+<script type="module" src="my-cafe.js"></script>
 </body>
 </html>
