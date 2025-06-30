@@ -4,69 +4,6 @@ body {
   min-height: 100vh;
 }
 
-/* 헤더 스타일 */
-.header {
-  background-color: white;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-}
-
-.logo-image {
-  width: 50px;
-  height: 50px;
-  margin-right: 0.8rem;
-}
-
-.logo-text {
-  color: #8B4513;
-  font-size: 1.5rem;
-  font-weight: bold;
-  font-style: italic;
-}
-
-.nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.nav-item {
-  color: #4A4A4A;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1.1rem;
-  transition: color 0.3s ease;
-}
-
-.nav-item:hover {
-  color: #8B4513;
-}
-
-.login-btn {
-  background-color: #8B4513;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.5rem;
-  border-radius: 20px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.login-btn:hover {
-  background-color: #A0522D;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(139, 69, 19, 0.3);
-}
-
-/* 메인 콘텐츠 스타일 */
 .main-content {
   padding: 3rem 0;
   min-height: calc(100vh - 100px);
@@ -152,92 +89,6 @@ body {
   margin-left: 0.3rem;
 }
 
-.cafe-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 0.6rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.edit-btn {
-  background-color: #e3f2fd;
-  color: #1565c0;
-}
-
-.edit-btn:hover {
-  background-color: #1565c0;
-  color: white;
-}
-
-.delete-btn {
-  background-color: #ffebee;
-  color: #c62828;
-}
-
-.delete-btn:hover {
-  background-color: #c62828;
-  color: white;
-}
-
-.view-btn {
-  background-color: #e8f5e8;
-  color: #2d5a2d;
-}
-
-.view-btn:hover {
-  background-color: #2d5a2d;
-  color: white;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
-}
-
-.empty-state i {
-  font-size: 4rem;
-  color: #ccc;
-  margin-bottom: 1.5rem;
-}
-
-.empty-state h4 {
-  margin-bottom: 1rem;
-  color: #4A4A4A;
-}
-
-.add-cafe-btn {
-  background-color: #8B4513;
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 25px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: inline-block;
-  margin-top: 1rem;
-}
-
-.add-cafe-btn:hover {
-  background-color: #A0522D;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
-}
-
 .pagination-container {
   margin-top: 3rem;
   display: flex;
@@ -261,19 +112,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .nav-menu {
-    gap: 1rem;
-  }
-
-  .nav-item {
-    font-size: 1rem;
-  }
-
-  .login-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
   .page-title {
     font-size: 1.5rem;
   }
@@ -282,26 +120,9 @@ body {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-
-  .cafe-actions {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
 }
 
 @media (max-width: 576px) {
-  .logo-text {
-    font-size: 1.2rem;
-  }
-
-  .nav-menu {
-    gap: 0.8rem;
-  }
-
-  .nav-item {
-    font-size: 0.9rem;
-  }
-
   .main-content {
     padding: 2rem 0;
   }
