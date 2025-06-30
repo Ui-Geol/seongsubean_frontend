@@ -1,14 +1,11 @@
 import {
   closeModal,
   initializeModal,
+  isMine,
   loadLayout,
   openModal,
   rootUrl
 } from '/common/common.js';
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadLayout(); // ✅ header/footer 삽입
-});
 
 let isOpen = true;
 
@@ -18,6 +15,7 @@ let cafeMenuData = null;
 let cafeReviewData = null;
 
 let reviewPage = 1;
+let currentMenuIdToDelete = null; // 삭제할 메뉴 ID 저장
 
 // 현재 브라우저 주소의 쿼리스트링 부분을 가져옴
 const params = new URLSearchParams(window.location.search);
@@ -36,6 +34,15 @@ async function setCafeHeader() {
       roundedRating,
       totalCount
     } = response.data.cafeHeaderDTO;
+
+    const owner = await axios.get(rootUrl + `/api/cafe/${cafeId}/cafeDTO`);
+
+    const isOwner = await isMine(owner.data.cafeDTO.email);
+
+    if (!isOwner) {
+      document.getElementById("editCafe").style.display = 'none';
+      document.getElementById('deleteCafe').style.display = 'none';
+    }
 
     const imageResponse = await axios.get(
         rootUrl + '/api/common' + mainImage,
@@ -119,6 +126,7 @@ async function showTab(tab) {
       container.innerHTML = renderOverview(cafeOverviewData);
       updateTodayHours(cafeOverviewData.operationTimes);
       renderOperationTimes(cafeOverviewData.operationTimes);
+      setupOverviewEventListeners();
     } else {
       container.innerHTML = '데이터가 없습니다.';
     }
@@ -165,17 +173,17 @@ function renderOverview(data) {
             </svg>
             <div class="info-text">
               <div class="hours-container">
-                <button class="status-badge status" id="statusBadge" onclick="toggleStatus()">영업중
+                <button class="status-badge status" id="statusBadge">영업중
                 </button>
-                <button class="hours-dropdown" onclick="toggleHours()">
+                <button class="hours-dropdown">
                   <span>08:30에 영업 시작</span>
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path
                         d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 01.753 1.659l-4.796 5.48a1 1 0 01-1.506 0z"/>
                   </svg>
                 </button>
-                <button class="status-badge status today-closed" id="todayClosedBtn"
-                        onclick="toggleTodayClosed()">오늘 휴무
+                <button class="status-badge status today-closed" id="todayClosedBtn">
+                오늘 휴무
                 </button>
 
                 <div class="hours-detail" id="hoursDetail">
@@ -202,6 +210,26 @@ function renderOverview(data) {
         </div>
       </div>
   `;
+}
+
+function setupOverviewEventListeners() {
+  // 영업상태 토글
+  const statusBadge = document.getElementById('statusBadge');
+  if (statusBadge) {
+    statusBadge.addEventListener('click', toggleStatus);
+  }
+
+  // 시간 드롭다운 토글
+  const hoursDropdown = document.querySelector('.hours-dropdown');
+  if (hoursDropdown) {
+    hoursDropdown.addEventListener('click', toggleHours);
+  }
+
+  // 휴무 토글
+  const todayClosedBtn = document.getElementById('todayClosedBtn');
+  if (todayClosedBtn) {
+    todayClosedBtn.addEventListener('click', toggleTodayClosed);
+  }
 }
 
 function toggleStatus() {
@@ -316,9 +344,26 @@ function formatPrice(price) {
   return price.toLocaleString('ko-kr') + "원";
 }
 
+// renderMenuList 함수에서 메뉴 수정/삭제 버튼 부분 수정
 async function renderMenuList(menuInfoList) {
   const menuListEl = document.getElementById('menu-list');
   menuListEl.innerHTML = ''; // 기존 내용 제거
+
+  const owner = await axios.get(rootUrl + `/api/cafe/${cafeId}/cafeDTO`);
+  const isOwner = await isMine(owner.data.cafeDTO.email);
+
+  // 메뉴 추가 헤더 표시/숨김
+  if (!isOwner) {
+    document.getElementById("addMenuHeader").style.display = 'none';
+  } else {
+    // ✅ 메뉴 추가 버튼에 add-menu.html로 이동하는 이벤트 추가
+    const addMenuBtn = document.getElementById('addMenuBtn');
+    if (addMenuBtn) {
+      addMenuBtn.addEventListener('click', () => {
+        window.location.href = `/cafe/add-menu.html?cafeId=${cafeId}`;
+      });
+    }
+  }
 
   for (const menu of menuInfoList) {
     // 이미지가 없으면 기본 이미지 사용
@@ -329,20 +374,21 @@ async function renderMenuList(menuInfoList) {
         ? `<div class="menu-description">${menu.description}</div>`
         : '';
 
-    // 메뉴 아이템 HTML 생성 (이미지 src는 임시로 비워둠)
+    // ✅ 소유자일 때만 편집/삭제 버튼 표시 (삭제 버튼을 모달로 변경)
+    const menuActionsHtml = isOwner ? `
+      <div class="menu-actions">
+        <button class="edit-btn" data-menu-id="${menu.menuId}" title="메뉴수정" type="button">✏️</button>
+        <button class="delete-btn" data-menu-id="${menu.menuId}" title="메뉴삭제" type="button">🗑️</button>
+      </div>
+    ` : '';
+
+    // 메뉴 아이템 HTML 생성
     const menuItemHtml = `
       <div class="menu-item">
         <div class="menu-info">
           <div class="menu-header">
             <div class="menu-name">${menu.menuName}</div>
-            <div class="menu-actions">
-              <a class="edit-btn" href="/add-menu?menuId=${menu.menuId}" title="메뉴수정">
-                <button class="edit-btn" type="button">✏️</button>
-              </a>
-              <a class="delete-btn" href="/cafe-detail?deleteMenuId=${menu.menuId}" title="메뉴삭제">
-                <button class="delete-btn" type="button">🗑️</button>
-              </a>
-            </div>
+            ${menuActionsHtml}
           </div>
           ${descriptionHtml}
           <div class="menu-price">${formatPrice(menu.price)}</div>
@@ -370,6 +416,32 @@ async function renderMenuList(menuInfoList) {
       // 이미지 로드 실패 시 기본 이미지 사용
       imgEl.src = '/images/cafe/menuDefault.png';
     }
+  }
+
+  // ✅ 메뉴 수정/삭제 버튼들에 이벤트 리스너 추가
+  if (isOwner) {
+    // 수정 버튼 이벤트
+    const editButtons = menuListEl.querySelectorAll('.edit-btn');
+    editButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const menuId = button.getAttribute('data-menu-id');
+        // cafeId와 menuId를 쿼리 파라미터로 전달하여 add-menu.html로 이동
+        window.location.href = `/cafe/add-menu.html?cafeId=${cafeId}&menuId=${menuId}`;
+      });
+    });
+
+    // 삭제 버튼 이벤트
+    const deleteButtons = menuListEl.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const menuId = button.getAttribute('data-menu-id');
+        currentMenuIdToDelete = menuId;
+        // 메뉴 삭제 모달 열기
+        openModal('/cafe/menu-delete-modal.html');
+      });
+    });
   }
 }
 
@@ -537,21 +609,41 @@ function setupDeleteButton() {
   }
 }
 
-// 모달 이벤트 핸들러 설정
+// 수정 버튼 이벤트 설정
+function setupEditButton() {
+  const editButton = document.getElementById('editCafe');
+
+  editButton.addEventListener('click', function () {
+    location.href = `/cafe/cafe-registration.html?cafeId=` + cafeId;
+  });
+
+}
+
 function setupModalEventHandlers() {
   // 모달 확인 버튼 클릭 시 처리
   document.addEventListener('modalConfirm', function (event) {
     const {buttonType} = event.detail;
 
-    if (buttonType.includes('delete-btn')) {
+    console.log('모달 확인 버튼 클릭됨:', buttonType);
+
+    // 더 구체적인 클래스를 먼저 체크
+    if (buttonType.includes('menu-delete-btn')) {
+      console.log('메뉴 삭제 실행');
+      handleMenuDelete();
+    } else if (buttonType.includes('cafe-delete-btn')) {
+      console.log('카페 삭제 실행');
       handleCafeDelete();
+    } else if (buttonType.includes('delete-btn')) {
+      console.log('일반 삭제 버튼 - 카페 삭제로 처리');
+      handleCafeDelete();
+    } else {
+      console.warn('알 수 없는 버튼 타입:', buttonType);
     }
   });
 }
 
 // 카페 삭제 처리
 async function handleCafeDelete() {
-
   try {
     // 로딩 표시 (선택사항)
     showLoadingInModal();
@@ -577,6 +669,56 @@ async function handleCafeDelete() {
   }
 }
 
+// 메뉴 삭제 처리
+async function handleMenuDelete() {
+  if (!currentMenuIdToDelete) {
+    console.error('삭제할 메뉴 ID가 없습니다.');
+    return;
+  }
+
+  try {
+    // 로딩 표시
+    showLoadingInModal();
+
+    const response = await axios.delete(
+        rootUrl + `/api/cafe/${cafeId}/menu/${currentMenuIdToDelete}`);
+    console.log('메뉴 삭제 ID:', currentMenuIdToDelete);
+
+    if (response.status === 204) {
+      // 메뉴 목록 다시 로드하여 실시간 업데이트
+      const menuRes = await axios.get(rootUrl + `/api/cafe/${cafeId}/menu`);
+      cafeMenuData = menuRes.data.menuDTOList;
+
+      // 메뉴 탭이 현재 활성화되어 있다면 다시 렌더링
+      const menuTab = document.getElementById('menuTab');
+      if (menuTab && menuTab.style.display !== 'none') {
+        renderMenuList(cafeMenuData);
+      }
+
+      closeModal();
+      alert('메뉴가 성공적으로 삭제되었습니다.');
+    } else {
+      throw new Error('메뉴 삭제 요청이 실패했습니다.');
+    }
+
+  } catch (error) {
+    console.error('메뉴 삭제 실패:', error);
+
+    let errorMessage = '메뉴 삭제 중 오류가 발생했습니다.';
+    if (error.response) {
+      errorMessage = error.response.data.message ||
+          error.response.data.error ||
+          `HTTP ${error.response.status} 에러가 발생했습니다.`;
+    }
+
+    alert(errorMessage);
+    closeModal();
+
+  } finally {
+    currentMenuIdToDelete = null; // 초기화
+  }
+}
+
 // 모달에 로딩 표시 (선택사항)
 function showLoadingInModal() {
   const modalContainer = document.getElementById('modalContainer');
@@ -584,7 +726,7 @@ function showLoadingInModal() {
     modalContainer.innerHTML = `
             <div style="padding: 40px; text-align: center;">
                 <div style="margin-bottom: 20px;">⏳</div>
-                <p>카페를 삭제하는 중...</p>
+                <p>삭제하는 중...</p>
             </div>
         `;
   }
@@ -597,6 +739,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await initializeModal();
 
-  setupDeleteButton();
   setupModalEventHandlers();
 });

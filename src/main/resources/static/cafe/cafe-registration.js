@@ -1,14 +1,16 @@
 import {rootUrl} from "/common/common.js";
 
 document.addEventListener('DOMContentLoaded', async function () {
-  // 경로에서 카페 ID 추출 (수정 모드 판단)
-  const pathParts = window.location.pathname.split('/');
-  const last = pathParts[pathParts.length - 1];
+  // 쿼리스트링에서 카페 ID 추출
+  const params = new URLSearchParams(window.location.search);
+  const cafeId = params.get('cafeId');
 
-  // 숫자인 경우에만 수정 모드로 간주
-  const isEdit = /^\d+$/.test(last);
-  // const cafeId = isEdit ? parseInt(last, 10) : null;
-  const cafeId = null;
+  // 수정 모드 판단: cafeId가 있고 숫자인 경우
+  const isEdit = cafeId && /^\d+$/.test(cafeId);
+
+  console.log('=== 모드 확인 ===');
+  console.log('cafeId:', cafeId);
+  console.log('isEdit:', isEdit);
 
   // DOM 요소들
   const form = document.getElementById('cafeForm');
@@ -40,7 +42,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   // 취소 버튼 이벤트
   if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
-      window.location.href = '/';
+      if (isEdit) {
+        // 수정 모드에서는 해당 카페 상세 페이지로
+        window.location.href = `/cafe/cafe-detail.html?cafeId=${cafeId}`;
+      } else {
+        // 등록 모드에서는 메인 페이지로
+        window.location.href = '/';
+      }
     });
   }
 
@@ -108,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   // 영업시간 그룹 추가
-  function addBusinessHoursGroup() {
+  function addBusinessHoursGroup(operationData = null) {
     const clone = template.content.cloneNode(true);
     const group = clone.querySelector('.business-hours-group');
 
@@ -122,14 +130,94 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     businessHoursContainer.appendChild(group);
+
+    // 수정 모드일 때 기존 데이터 설정
+    if (operationData) {
+      setBusinessHoursData(group, operationData);
+    }
+
+    return group;
+  }
+
+  // 영업시간 데이터 설정 (수정 모드용)
+  function setBusinessHoursData(group, operationData) {
+    try {
+      // 요일 설정
+      if (operationData.weekday) {
+        const weekdaySelect = group.querySelector('.weekday-select');
+        weekdaySelect.value = operationData.weekday;
+      }
+
+      // 시간 파싱 및 설정
+      if (operationData.openTime) {
+        const openTimeData = parseTimeString(operationData.openTime);
+        setTimeSelects(group, 0, openTimeData); // 첫 번째 시간 선택자들
+      }
+
+      if (operationData.closeTime) {
+        const closeTimeData = parseTimeString(operationData.closeTime);
+        setTimeSelects(group, 1, closeTimeData); // 두 번째 시간 선택자들
+      }
+
+    } catch (error) {
+      console.error('영업시간 데이터 설정 실패:', error);
+    }
+  }
+
+  // 시간 문자열 파싱 (HH:mm 또는 HH:mm:ss 형식)
+  function parseTimeString(timeString) {
+    const timeParts = timeString.split(':');
+    let hour = parseInt(timeParts[0]);
+    const minute = timeParts[1];
+
+    let period = 'AM';
+    let displayHour = hour;
+
+    // 24시간 형식을 12시간 형식으로 변환
+    if (hour === 0) {
+      displayHour = 12;
+      period = 'AM';
+    } else if (hour === 12) {
+      displayHour = 12;
+      period = 'PM';
+    } else if (hour > 12) {
+      displayHour = hour - 12;
+      period = 'PM';
+    }
+
+    return {
+      hour: displayHour.toString(),
+      minute: minute,
+      period: period
+    };
+  }
+
+  // 시간 선택자에 값 설정
+  function setTimeSelects(group, index, timeData) {
+    const hourSelects = group.querySelectorAll('.hour-select');
+    const minuteSelects = group.querySelectorAll('.minute-select');
+    const periodSelects = group.querySelectorAll('.period-select');
+
+    if (hourSelects[index]) {
+      hourSelects[index].value = timeData.hour;
+    }
+    if (minuteSelects[index]) {
+      minuteSelects[index].value = timeData.minute;
+    }
+    if (periodSelects[index]) {
+      periodSelects[index].value = timeData.period;
+    }
   }
 
   // 영업시간 추가 버튼 이벤트
   if (addBusinessHoursBtn) {
-    addBusinessHoursBtn.addEventListener('click', addBusinessHoursGroup);
+    addBusinessHoursBtn.addEventListener('click',
+        () => addBusinessHoursGroup());
 
-    // 초기 그룹 하나 추가
-    addBusinessHoursGroup();
+    // 수정 모드가 아닐 때만 초기 그룹 추가
+    if (!isEdit) {
+      addBusinessHoursGroup();
+    }
   }
 
   // 영업시간 데이터 수집 (LocalTime 형식에 맞게 수정)
@@ -164,8 +252,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         businessHours.push({
           weekday: weekday,
-          openTime: convertTo24Hour(startHour, startMinute, startPeriod),   // "HH:mm" 형식
-          closeTime: convertTo24Hour(endHour, endMinute, endPeriod)        // "HH:mm" 형식
+          openTime: convertTo24Hour(startHour, startMinute, startPeriod),
+          closeTime: convertTo24Hour(endHour, endMinute, endPeriod)
         });
       }
     });
@@ -192,9 +280,9 @@ document.addEventListener('DOMContentLoaded', async function () {
           const div = document.createElement('div');
           div.className = 'preview-item';
           div.innerHTML = `
-                        <img src="${e.target.result}" alt="미리보기">
-                        <button type="button" class="remove-image">×</button>
-                    `;
+            <img src="${e.target.result}" alt="미리보기">
+            <button type="button" class="remove-image">×</button>
+          `;
           imagePreview.appendChild(div);
         };
         reader.readAsDataURL(file);
@@ -210,52 +298,103 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
   }
 
-  // 수정인 경우 데이터 불러오기
+  // 기존 이미지 표시 (수정 모드용)
+  function displayExistingImage(imagePath) {
+    if (!imagePath) {
+      return;
+    }
+
+    imagePreview.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'preview-item existing-image';
+    div.innerHTML = `
+      <img src="${rootUrl}/api/common${imagePath}" alt="기존 이미지">
+      <button type="button" class="remove-image">×</button>
+      <span class="existing-label">기존 이미지</span>
+    `;
+    imagePreview.appendChild(div);
+  }
+
+  // 수정 모드일 때 데이터 불러오기
   if (isEdit) {
     try {
-      const res = await fetch(`/api/cafe/${cafeId}`);
-      const data = await res.json();
+      console.log('=== 수정 데이터 로드 시작 ===');
 
-      cafeNameInput.value = data.cafeName || '';
-      addressInput.value = data.address || '';
-      zipCodeInput.value = data.zipCode || '';
-      detailAddressInput.value = data.detailAddress || '';
-      callNumberInput.value = data.callNumber || '';
-      introductionInput.value = data.introduction || '';
+      const response = await axios.get(`${rootUrl}/api/cafe/${cafeId}/cafeDTO`);
+      const data = response.data.cafeDTO;
+
+      console.log('=== 불러온 카페 데이터 ===');
+      console.log(data);
+
+      // 기본 정보 설정
+      if (cafeNameInput) {
+        cafeNameInput.value = data.cafeName || '';
+      }
+      if (addressInput) {
+        addressInput.value = data.address || '';
+      }
+      if (zipCodeInput) {
+        zipCodeInput.value = data.zipCode || '';
+      }
+      if (detailAddressInput) {
+        detailAddressInput.value = data.detailAddress
+            || '';
+      }
+      if (callNumberInput) {
+        callNumberInput.value = data.callNumber || '';
+      }
+      if (introductionInput) {
+        introductionInput.value = data.introduction || '';
+      }
+
+      // 기존 이미지 표시
+      if (data.mainImage) {
+        displayExistingImage(data.mainImage);
+      }
 
       // 영업시간 데이터 복원
       if (data.operationTimes && Array.isArray(data.operationTimes)) {
-        // 기존 그룹 제거
+        console.log('=== 영업시간 데이터 복원 ===');
+        console.log('operationTimes:', data.operationTimes);
+
+        // 기존 그룹 제거 (있다면)
         businessHoursContainer.innerHTML = '';
 
-        // 데이터에 따라 그룹 생성
-        data.operationTimes.forEach(hours => {
-          addBusinessHoursGroup();
-          const lastGroup = businessHoursContainer.lastElementChild;
-
-          // 값 설정 (OperationTimeDTO 구조에 맞게)
-          if (hours.weekday) {
-            lastGroup.querySelector('.weekday-select').value = hours.weekday;
-          }
-          // 시간 파싱 후 설정 로직 (openTime, closeTime 사용)
-          if (hours.openTime) {
-            // "08:00 AM" 형식을 파싱해서 select에 설정
-            // 추후 구현
-          }
-          if (hours.closeTime) {
-            // "22:00 PM" 형식을 파싱해서 select에 설정
-            // 추후 구현
-          }
+        // 각 영업시간 데이터에 대해 그룹 생성
+        data.operationTimes.forEach((operationTime, index) => {
+          console.log(`영업시간 ${index + 1}:`, operationTime);
+          addBusinessHoursGroup(operationTime);
         });
+      } else {
+        // 영업시간 데이터가 없으면 빈 그룹 하나 추가
+        addBusinessHoursGroup();
       }
 
+      // 페이지 제목 변경
+      document.title = `카페 수정 - ${data.cafeName}`;
+
+      // 글자 수 카운터 업데이트
       updateCharCount();
-    } catch (err) {
-      console.error('수정 데이터 불러오기 실패', err);
-      alert('카페 정보를 불러올 수 없습니다.');
+
+      console.log('=== 수정 데이터 로드 완료 ===');
+
+    } catch (error) {
+      console.error('=== 수정 데이터 불러오기 실패 ===');
+      console.error(error);
+
+      let errorMessage = '카페 정보를 불러올 수 없습니다.';
+      if (error.response?.status === 404) {
+        errorMessage = '존재하지 않는 카페입니다.';
+      } else if (error.response?.status === 403) {
+        errorMessage = '카페 정보에 접근할 권한이 없습니다.';
+      }
+
+      alert(errorMessage);
+      window.location.href = '/';
     }
   }
 
+  // 폼 제출 이벤트
   submitBtn.addEventListener('click', async function (e) {
     e.preventDefault();
 
@@ -267,8 +406,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     const introduction = introductionInput.value.trim();
     const operationTimes = collectBusinessHours();
 
-    // 디버깅: 수집된 데이터 확인
     console.log('=== 폼 데이터 확인 ===');
+    console.log('모드:', isEdit ? '수정' : '등록');
     console.log('cafeName:', cafeName);
     console.log('address:', address);
     console.log('zipCode:', zipCode);
@@ -298,19 +437,21 @@ document.addEventListener('DOMContentLoaded', async function () {
       alert('소개는 301자 이하로 작성해주세요.');
       return;
     }
-    if (operationTimes.length === 1) {
+    if (operationTimes.length === 0) {
       alert('영업시간을 하나 이상 설정해주세요.');
       return;
     }
 
+    // 이미지 검사 (수정 모드에서는 선택사항)
     const files = imageInput.files;
-    if (files.length !== 1) {
-      alert('이미지는 1개만 넣는것이 필수 입니다');
+    const hasExistingImage = imagePreview.querySelector('.existing-image');
+
+    if (!isEdit && files.length !== 1) {
+      alert('이미지는 1개 업로드가 필수입니다.');
       return;
     }
 
     try {
-
       // JSON 데이터 객체 생성
       const requestData = {
         cafeName,
@@ -319,22 +460,36 @@ document.addEventListener('DOMContentLoaded', async function () {
         detailAddress,
         callNumber,
         introduction,
-        operationTimes,
-        mainImage: files[0].name
+        operationTimes
       };
+
+      if (isEdit) {
+        requestData.cafeId = cafeId;
+      }
+
+      // 새 이미지가 있으면 파일명 추가
+      // 새 이미지가 있으면 파일명 추가 (등록/수정 모드별 처리)
+      if (files.length > 0) {
+        if (isEdit) {
+          // 수정 모드: /images/cafe/ 경로 포함
+          requestData.mainImage = '/images/cafe/' + files[0].name;
+        } else {
+          // 등록 모드: 파일명만
+          requestData.mainImage = files[0].name;
+        }
+        console.log('이미지 파일:', requestData.mainImage);
+      }
 
       console.log('=== 전송할 JSON 데이터 ===');
       console.log(requestData);
+      console.log(requestData.mainImage);
 
-      const url = cafeId ? `/api/cafe/${cafeId}` : '/api/cafe';
-      const method = cafeId ? 'PUT' : 'POST';
+      const url = isEdit ? `/api/cafe/${cafeId}` : '/api/cafe';
+      const method = isEdit ? 'PUT' : 'POST';
 
       console.log('=== 요청 정보 ===');
-      console.log('URL:', url);
+      console.log('URL:', rootUrl + url);
       console.log('Method:', method);
-      console.log(rootUrl);
-
-      console.log('=== 요청 전송 시작 ===');
 
       // Axios를 사용한 JSON 전송
       const response = await axios({
@@ -352,34 +507,29 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.log('Response Data:', response.data);
 
       // 성공 처리
-      const responseCafeId = response.data;
-      if (responseCafeId) {
-        alert('카페가 등록되었습니다!');
-        location.href = `/cafe/cafe-detail.html?cafeId=` + responseCafeId;
-      } else {
-        alert('카페 등록에 실패했습니다.');
-      }
+      const responseCafeId = isEdit ? cafeId : response.data;
+      const successMessage = isEdit ? '카페 정보가 수정되었습니다!' : '카페가 등록되었습니다!';
 
-    } catch (err) {
+      alert(successMessage);
+      location.href = `/cafe/cafe-detail.html?cafeId=${responseCafeId}`;
+
+    } catch (error) {
       console.error('=== 요청 처리 오류 ===');
+      console.error(error);
 
-      if (err.response) {
-        // 서버가 응답했지만 오류 상태 코드
-        console.error('서버 오류:', err.response.status, err.response.data);
-        const errorMessage = err.response.data.message
-            || err.response.data.error ||
-            `HTTP ${err.response.status} 에러가 발생했습니다.`;
-        alert('서버 에러: ' + errorMessage);
-      } else if (err.request) {
-        // 요청이 전송되었지만 응답 없음
-        console.error('네트워크 오류:', err.request);
-        alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
-      } else {
-        // 기타 오류
-        console.error('요청 설정 오류:', err.message);
-        alert('요청 중 문제가 발생했습니다: ' + err.message);
+      let errorMessage = '요청 처리 중 오류가 발생했습니다.';
+
+      if (error.response) {
+        console.error('서버 오류:', error.response.status, error.response.data);
+        errorMessage = error.response.data.message ||
+            error.response.data.error ||
+            `HTTP ${error.response.status} 에러가 발생했습니다.`;
+      } else if (error.request) {
+        console.error('네트워크 오류:', error.request);
+        errorMessage = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
       }
+
+      alert(errorMessage);
     }
   });
-
 });

@@ -6,6 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <link rel="stylesheet" href="/cafe/cafe-detail.css"/>
   <link rel="stylesheet" href="/cafe/cafe-delete-modal.css"/>
+  <link rel="stylesheet" href="/cafe/menu-delete-modal.css"/>
   <link rel="stylesheet" href="/common/header.css"/>
   <link rel="stylesheet" href="/common/footer.css"/>
 </head>
@@ -41,6 +42,12 @@
     <div class="cafe-content" id="cafeContent"></div>
   </div>
   <div class="tab-content" id="menuTab" style="display: none;">
+    <div class="menu-btn-header" id="addMenuHeader">
+      <button class="add-menu-btn" id="addMenuBtn">
+        <span class="plus-icon">+</span>
+        메뉴 추가
+      </button>
+    </div>
     <div class="menu-list" id="menu-list"></div>
   </div>
   <div class="tab-content" id="reviewTab" style="display: none;">
