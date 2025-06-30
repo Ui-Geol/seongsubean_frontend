@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
 });
 // 즉시 실행 함수로 스코프 격리
-(() => {
+(callback => {
   let retryCount = 0;
   const MAX_RETRIES = 50; // 최대 5초 대기 (100ms * 50)
 
@@ -48,6 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
       map.setMaxLevel(5);
       const geocoder = new kakao.maps.services.Geocoder();
 
+      // ✅ 현재 열린 InfoWindow를 추적하는 변수 추가
+      let currentInfoWindow = null;
+
       // 3. SeongsuBean 일러스트 및 커스텀 마커 삽입 (index.js 통합 부분)
       geocoder.addressSearch('서울특별시 성동구 성수일로 56', (result, status) => {
         if (status === kakao.maps.services.Status.OK) {
@@ -82,12 +85,23 @@ document.addEventListener("DOMContentLoaded", () => {
       // ① Top5 가져오기 + 마커 추가
       function fetchTop5() {
         common.get('/api/search/top5')
-        .then(res => {
-          const list = res.data;
-          clearMarkers();
-          list.forEach(addr => addMarkerByAddress(addr));
-        })
-        .catch(console.error);
+            .then(res => {
+              const list = res.data;
+              clearMarkers();
+              list.forEach((item) => {
+                // item이 {addr, cafeId} 형태인지 {address, cafeId} 형태인지 확인
+                if (item.addr) {
+                  // 기존 형태: {addr: '주소', cafeId: 123}
+                  addMarkerByAddress(item.addr, item.cafeId);
+                } else if (item.address) {
+                  // 새로운 형태: {address: '주소', cafeId: 123}
+                  addMarkerByAddress(item);
+                } else {
+                  console.warn('알 수 없는 데이터 형태:', item);
+                }
+              });
+            })
+            .catch(console.error);
       }
 
       const crownBtn = document.getElementById('crownBtn');
@@ -97,27 +111,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 아이콘 클릭 리스너
       document.querySelectorAll('#filterIcons .filter-icon-img')
-      .forEach(img => {
-        img.addEventListener('click', () => {
-          const menuName = img.dataset.menu;
-          clearMarkers();
-          fetchCafeAddresses(menuName);
-        });
-      });
+          .forEach(img => {
+            img.addEventListener('click', () => {
+              const menuName = img.dataset.menu;
+              clearMarkers();
+              fetchCafeAddresses(menuName);
+            });
+          });
 
       // 4. 지도에 표시된 마커 객체들을 저장할 배열
       let markers = [];
 
       // 마커 전체 삭제
       function clearMarkers() {
+        // ✅ 기존 InfoWindow도 함께 닫기
+        if (currentInfoWindow) {
+          currentInfoWindow.close();
+          currentInfoWindow = null;
+        }
+
         markers.forEach(m => m.setMap(null));
         markers = [];
       }
 
-      // 3) 주소 → 위경도 변환 → 마커 생성
-      function addMarkerByAddress(address) {
-        console.log('[addMarkerByAddress] 검색:', address);
+      // ✅ 수정된 addMarkerByAddress 함수 - 객체 형태 주소 데이터 처리
+      function addMarkerByAddress(addressData, cafeId = null) {
+        // addressData가 객체인지 문자열인지 확인
+        let address;
+        let actualCafeId = cafeId;
+
+        if (typeof addressData === 'object' && addressData.address) {
+          // 객체 형태: {address: '주소', cafeId: 123}
+          address = addressData.address;
+          actualCafeId = addressData.cafeId || cafeId;
+        } else if (typeof addressData === 'string') {
+          // 문자열 형태: '주소'
+          address = addressData;
+        } else {
+          console.warn('유효하지 않은 주소 데이터:', addressData);
+          return;
+        }
+
+        console.log('[addMarkerByAddress] 검색:', address, 'cafeId:', actualCafeId);
+
+        // 주소 유효성 검사
+        if (!address || address.trim() === '') {
+          console.warn('빈 주소:', address);
+          return;
+        }
+
         geocoder.addressSearch(address, (result, status) => {
+          console.log('Geocoder 결과:', status, result);
+
           if (status === kakao.maps.services.Status.OK && result[0]) {
             const {y: lat, x: lng} = result[0];
             const pos = new kakao.maps.LatLng(lat, lng);
@@ -126,52 +171,120 @@ document.addEventListener("DOMContentLoaded", () => {
               map: map,
               position: pos
             });
+
+            console.log('마커 생성 완료:', address);
+
+            // actualCafeId가 있을 때만 클릭 이벤트 추가
+            if (actualCafeId) {
+              kakao.maps.event.addListener(marker, 'click', () => {
+                showCafeInfoWindow(actualCafeId, marker, pos);
+              });
+            }
+
             markers.push(marker);
+          } else {
+            console.error('주소 검색 실패:', address, '상태:', status);
           }
         });
       }
 
+      // ✅ 수정된 showCafeInfoWindow 함수 - 기존 InfoWindow 닫기 추가
+      function showCafeInfoWindow(cafeId, marker, position) {
+        // 기존에 열린 InfoWindow가 있으면 닫기
+        if (currentInfoWindow) {
+          currentInfoWindow.close();
+        }
+
+        axios.get(`${rootUrl}/api/cafe/${cafeId}/cafeDTO`)
+            .then(async res => {
+              const cafe = res.data.cafeDTO;
+
+              // 대표 이미지 불러오기
+              let imageUrl = '/images/common/default.png';
+              if (cafe.mainImage) {
+                try {
+                  const imageRes = await axios.get(`${rootUrl}/api/common${cafe.mainImage}`, { responseType: 'blob' });
+                  imageUrl = URL.createObjectURL(imageRes.data);
+                } catch (e) {
+                  console.warn('이미지 로드 실패, 기본 이미지로 대체');
+                }
+              }
+
+              const content = `
+        <div style="padding: 10px; width: 250px;">
+          <img src="${imageUrl}" style="width:100%; height:120px; object-fit:cover;" />
+          <h4>${cafe.cafeName}</h4>
+          <p>${cafe.fullAddress}</p>
+          <p>${cafe.callNumber}</p>
+          <button onclick="window.location.href='/cafe/cafe-detail.html?cafeId=${cafeId}'">상세보기</button>
+        </div>
+      `;
+
+              const infoWindow = new kakao.maps.InfoWindow({
+                content: content,
+                position: position
+              });
+
+              infoWindow.open(map, marker);
+
+              // ✅ 현재 열린 InfoWindow를 추적 변수에 저장
+              currentInfoWindow = infoWindow;
+            })
+            .catch(err => {
+              console.error('카페 정보 로딩 실패', err);
+            });
+      }
+
+      // ✅ 수정된 fetchCafeAddresses 함수
       function fetchCafeAddresses(menuName) {
         console.log('[fetchCafeAddresses] 요청하는 메뉴:', menuName);
-        common.get(
-            `/api/search-by-menu?menuName=${encodeURIComponent(menuName)}`)
-        .then(res => {
-          const addressList = res.data;
-          console.log('[fetchCafeAddresses] 받은 데이터:', addressList);
-          if (!Array.isArray(addressList)) {
-            return;
-          }
-          clearMarkers();
-          addressList.forEach(addr => {
-            const addrs = Array.isArray(addr) ? addr : [addr];
-            addrs.forEach(a => addMarkerByAddress(a));
-          });
-        })
-        .catch(err => console.error(err));
+        common.get(`/api/search-by-menu?menuName=${encodeURIComponent(menuName)}`)
+            .then(res => {
+              const addressList = res.data;
+              console.log('[fetchCafeAddresses] 받은 데이터:', addressList);
+              if (!Array.isArray(addressList)) {
+                return;
+              }
+              clearMarkers();
+
+              addressList.forEach(item => {
+                if (Array.isArray(item)) {
+                  // 배열 안에 배열이 있는 경우
+                  item.forEach(subItem => addMarkerByAddress(subItem));
+                } else {
+                  // 단일 아이템 (객체 또는 문자열)
+                  addMarkerByAddress(item);
+                }
+              });
+            })
+            .catch(err => console.error(err));
       }
 
       // ───────────────────────────────────────────────────────────────────
       /*
        * 키워드로 통합 검색 → 주소 리스트 반환 → 카카오 지오코딩 → 마커 표시
        */
+      // ✅ 수정된 searchByKeyword 함수
       function searchByKeyword(keyword) {
         console.log('[searchByKeyword] 요청 키워드:', keyword);
         axios.get(`/api/search?keyword=${encodeURIComponent(keyword)}`)
-        .then(res => {
-          const addressList = res.data;
-          if (!Array.isArray(addressList) || addressList.length === 0) {
-            alert('검색 결과가 없습니다.');
-            return;
-          }
-          clearMarkers();
-          addressList.forEach(addr => {
-            addMarkerByAddress(addr);
-          });
-        })
-        .catch(err => {
-          console.error('[searchByKeyword] 에러:', err);
-          alert('검색 중 오류가 발생했습니다.');
-        });
+            .then(res => {
+              const addressList = res.data;
+              console.log('[searchByKeyword] 받은 데이터:', addressList);
+              if (!Array.isArray(addressList) || addressList.length === 0) {
+                alert('검색 결과가 없습니다.');
+                return;
+              }
+              clearMarkers();
+
+              addressList.forEach(item => {
+                addMarkerByAddress(item);
+              });
+            })
+            .catch(err => {
+              console.error('[searchByKeyword] 에러:', err);
+              alert('검색 중 오류가 발생했습니다.');
+            });
       }
 
       // 7. 검색창 이벤트 핸들러
@@ -197,6 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       }
+
+      // ✅ 지도 클릭 시 InfoWindow 닫기 추가
+      kakao.maps.event.addListener(map, 'click', () => {
+        if (currentInfoWindow) {
+          currentInfoWindow.close();
+          currentInfoWindow = null;
+        }
+      });
 
       // 8. 카페 등록 버튼 클릭 시 이동
       // ✅ JWT 토큰 가져오기
