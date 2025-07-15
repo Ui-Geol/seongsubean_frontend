@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadCafes = async (page) => {
     const token = localStorage.getItem('auth');
 
-    const res = await axios.get(rootUrl + `/api/account/myCafe?page=${page}`, {
+    const res = await axios.get(rootUrl + `/api/account/profile/cafes?page=${page}`, {
       headers: {Authorization: `Bearer ${token}`}
     });
 
