@@ -39,6 +39,8 @@ async function setCafeHeader() {
 
     const isOwner = await isMine(owner.data.cafeDTO.email);
 
+    console.log(isOwner);
+
     if (!isOwner) {
       document.getElementById("editCafe").style.display = 'none';
       document.getElementById('deleteCafe').style.display = 'none';

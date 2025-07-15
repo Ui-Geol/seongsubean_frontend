@@ -80,6 +80,60 @@ body {
   font-family: inherit;
 }
 
+
+/* 주소 검색 버튼 개선 스타일 */
+#btnAddressSearch {
+  background: linear-gradient(135deg, #8B4513, #a0522d);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(139, 69, 19, 0.2);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+#btnAddressSearch::before {
+  content: "🔍 ";
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+#btnAddressSearch:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(139, 69, 19, 0.3);
+  background: linear-gradient(135deg, #a0522d, #8B4513);
+}
+
+#btnAddressSearch:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(139, 69, 19, 0.2);
+}
+
+/* 클릭 시 물결 효과 */
+#btnAddressSearch::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+#btnAddressSearch:active::after {
+  width: 300px;
+  height: 300px;
+}
+
 /* 에러 스타일 */
 .form-group input.error,
 .form-group textarea.error,
