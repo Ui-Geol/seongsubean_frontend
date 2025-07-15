@@ -28,12 +28,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     posts.forEach(post => {
       const row = document.createElement("tr");
+
+      // 클릭 시 이동할 링크
+      const link = `/cafe/cafe-detail.html?cafeId=${post.cafeId}`;
+
+      // 스타일 & 클릭 이벤트 설정
+      row.style.cursor = "pointer";
+      row.setAttribute("onclick", `location.href='${link}'`);
+
       row.innerHTML = `
-          <td>${post.cafeName}</td>
-          <td><a href="/cafe/${post.cafeId}">${post.content}</a></td>
-          <td>${new Date(post.createdDate).toISOString().slice(0, 10).replace(
-          /-/g, '. ')}</td>
-        `;
+    <td>${post.cafeName}</td>
+    <td>${post.content}</td>
+    <td>${new Date(post.createdDate).toISOString().slice(0, 10).replace(/-/g, '. ')}</td>
+  `;
+
       tbody.appendChild(row);
     });
     // 페이지네이션 렌더링
