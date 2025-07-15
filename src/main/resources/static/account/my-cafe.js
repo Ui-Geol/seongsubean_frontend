@@ -28,22 +28,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const col = document.createElement("div");
       col.className = "col";
       col.innerHTML = `
-        <a href="/cafe/${cafe.cafeId}" class="text-decoration-none text-dark">
-          <div class="cafe-card card h-100">
-            <img src="${cafe.mainImage || '/images/common/logo.png'}" class="card-img-top cafe-image" alt="카페 이미지">
-            <div class="card-body cafe-info">
-              <h5 class="card-title cafe-name">${cafe.cafeName}</h5>
-              <p class="card-text cafe-address">${cafe.address}</p>
-              <div class="cafe-rating">
-                <span class="rating-score">${cafe.avgStar.toFixed(1)}</span>
-                <div class="stars">
-                  ${'★'.repeat(Math.floor(cafe.avgStar))}${'☆'.repeat(5 - Math.floor(cafe.avgStar))}
-                </div>
-                <span class="review-count">리뷰 ${cafe.reviewCount}개</span>
-              </div>
-            </div>
-          </div>
-        </a>
+       <div class="cafe-card card h-100" style="cursor: pointer;" 
+       onclick="location.href='/cafe/cafe-detail.html?cafeId=${cafe.cafeId}'">
+    <img src="${cafe.mainImage || '/images/common/logo.png'}" class="card-img-top cafe-image" alt="카페 이미지">
+    <div class="card-body cafe-info">
+      <h5 class="card-title cafe-name">${cafe.cafeName}</h5>
+      <p class="card-text cafe-address">${cafe.address}</p>
+      <div class="cafe-rating">
+        <span class="rating-score">${cafe.avgStar.toFixed(1)}</span>
+        <div class="stars">
+          ${'★'.repeat(Math.floor(cafe.avgStar))}${'☆'.repeat(
+          5 - Math.floor(cafe.avgStar))}
+        </div>
+        <span class="review-count">리뷰 ${cafe.reviewCount}개</span>
+      </div>
+    </div>
+  </div>
       `;
       grid.appendChild(col);
     });

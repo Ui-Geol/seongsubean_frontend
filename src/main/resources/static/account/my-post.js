@@ -8,13 +8,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadPosts = async (page) => {
     const token = localStorage.getItem('auth');
 
-    const res = await axios.get(`${rootUrl}/api/account/profile/posts?page=${page}`, {
-      headers: {Authorization: `Bearer ${token}`}
-    });
+    const res = await axios.get(
+        `${rootUrl}/api/account/profile/posts?page=${page}`, {
+          headers: {Authorization: `Bearer ${token}`}
+        });
 
     const {posts, currentPage, totalPages, totalCount} = res.data;
     // 제목 업데이트
-    document.getElementById("page-title").textContent = `내가 쓴 글 총 ${totalCount}개`;
+    document.getElementById(
+        "page-title").textContent = `내가 쓴 글 총 ${totalCount}개`;
 
     // 테이블 렌더링
     const tbody = document.getElementById("post-table-body");
@@ -29,16 +31,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     posts.forEach(post => {
       const row = document.createElement("tr");
+
       const link = post.boardType === '자유'
-          ? `/free/detail?id=${post.boardId}`
-          : `/report/detail?id=${post.boardId}`;
+          ? `/board/free-detail.html?id=${post.boardId}`
+          : `/board/report-detail.html?id=${post.boardId}`;
+
+      row.style.cursor = "pointer";
+      row.setAttribute("onclick", `location.href='${link}'`);
 
       row.innerHTML = `
-          <td>${post.boardType}</td>
-          <td><a class="post-title" href="${link}">${post.title}</a></td>
-          <td>${new Date(post.created_date).toISOString().slice(0, 10).replace(
-          /-/g, '. ')}</td>
-        `;
+    <td>${post.boardType}</td>
+    <td>${post.title}</td>
+    <td>${new Date(post.created_date).toISOString().slice(0, 10).replace(/-/g,
+          '. ')}</td>
+  `;
+
       tbody.appendChild(row);
     });
 
