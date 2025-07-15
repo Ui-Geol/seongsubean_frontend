@@ -17,7 +17,7 @@ function checkEmail() {
     return;
   }
 
-  axios.post( rootUrl + "/api/account/checkEmail", {
+  axios.post( rootUrl + "/api/account/exist/email", {
     email: email
   })
   .then(res => {
@@ -47,7 +47,7 @@ function checkNickname() {
     return;
   }
 
-  axios.post( rootUrl + "/api/account/checkNickname", {
+  axios.post( rootUrl + "/api/account/exist/nickname", {
     nickName: nickname
   })
   .then(res => {
@@ -116,7 +116,7 @@ function handleJoin(event) {
     return;
   }
   // 통과 시 submit 허용
-  axios.post( rootUrl + "/api/account/join",{
+  axios.post( rootUrl + "/api/account",{
     email : email,
     nickName : nickname,
     password : password,

@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    axios.post( rootUrl + "/api/account/checkPw",
+    axios.post( rootUrl + "/api/account/profile",
         {password: password},
         {headers: {Authorization: `Bearer ${token}` } }
     )

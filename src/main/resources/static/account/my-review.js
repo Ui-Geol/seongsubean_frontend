@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadReviews = async (page) => {
     const token = localStorage.getItem('auth');
 
-    const res = await axios.get(rootUrl + `/api/account/myReview?page=${page}`, {
+    const res = await axios.get(rootUrl + `/api/account/profile/reviews?page=${page}`, {
       headers: {Authorization: `Bearer ${token}`}
     });
 

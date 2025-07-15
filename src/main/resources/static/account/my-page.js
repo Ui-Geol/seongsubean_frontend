@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const token = localStorage.getItem("auth");
 
-  axios.get( rootUrl + "/api/account/myPage", {
+  axios.get( rootUrl + "/api/account/profile", {
     headers: {Authorization: `Bearer ${token}`}
   })
   .then(res => {
@@ -33,25 +33,28 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 });
 
-document.getElementById('profile-upload').addEventListener('change',
-    function () {
-      const file = this.files[0];
-      const formData = new FormData();
-      formData.append("file", file);
+document.getElementById('profile-upload').addEventListener('change', function () {
+  const file = this.files[0];
+  if (!file) return;
 
-      fetch(rootUrl + "/api/account/uploadImage", {
-        method: "PUT",
-        body: formData
-      }).then(response => {
-        if (response.ok) {
-          // 미리보기 이미지 변경
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            document.getElementById('profile-img').src = e.target.result;
-          };
-          reader.readAsDataURL(file);
-        } else {
-          alert("업로드 실패");
-        }
-      });
-    });
+  const formData = new FormData();
+  formData.append("image", file);
+
+  axios.put(rootUrl + "/api/account/profile/image", formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    // 미리보기 이미지 변경
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById('profile-img').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  })
+  .catch(() => {
+    alert("업로드 실패");
+  });
+});

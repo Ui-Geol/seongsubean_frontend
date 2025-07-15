@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () =>{
   const confirmRow = document.getElementById("password-confirm").closest(".form-row");
 
   const token = localStorage.getItem("auth");
-  axios.get( rootUrl + "/api/account/editProfile",{
+  axios.get( rootUrl + "/api/account/profile",{
     headers : { Authorization: `Bearer ${token}`}
   })
   .then(res =>{
@@ -42,7 +42,7 @@ function checkNickname() {
     return;
   }
 
-  axios.post(rootUrl + "/api/account/checkNickname", {
+  axios.post(rootUrl + "/api/account/exist/nickname", {
     nickName: nickname
   })
   .then(res => {
@@ -103,7 +103,7 @@ function checkEmpty(event) {
   if (password) payload.newPassword = password;
 
   const token = localStorage.getItem("auth");
-  axios.post( rootUrl + "/api/account/editProfile", payload, {
+  axios.put( rootUrl + "/api/account/profile", payload, {
     headers : { Authorization : `Bearer ${token}`}
   })
   .then(res => {
@@ -122,7 +122,7 @@ function deleteEvent() {
     }
 
     const token = localStorage.getItem("auth");
-    axios.delete( rootUrl + "/api/account/deleteAccount", {
+    axios.delete( rootUrl + "/api/account", {
       headers: {
         Authorization: `Bearer ${token}`
       }
