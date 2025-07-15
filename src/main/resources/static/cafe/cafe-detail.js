@@ -115,45 +115,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 });
 
-async function showTab(tab) {
-  // 모든 탭 컨텐츠 숨김
-  document.querySelectorAll('.tab-content').forEach(div => {
-    div.style.display = 'none';
-  });
-
-  if (tab === 'overview') {
-    document.getElementById('overviewTab').style.display = 'block';
-    const container = document.getElementById('cafeContent');
-    if (cafeOverviewData) {
-      container.innerHTML = renderOverview(cafeOverviewData);
-      updateTodayHours(cafeOverviewData.operationTimes);
-      renderOperationTimes(cafeOverviewData.operationTimes);
-      setupOverviewEventListeners();
-    } else {
-      container.innerHTML = '데이터가 없습니다.';
-    }
-  } else if (tab === 'menu') {
-    document.getElementById('menuTab').style.display = 'block';
-    const container = document.getElementById('menu-list');
-    if (cafeMenuData) {
-      renderMenuList(cafeMenuData);
-    } else {
-      container.innerHTML = '데이터가 없습니다.';
-    }
-  } else if (tab === 'reviews') {
-    reviewPage = 1;
-    document.getElementById('reviewTab').style.display = 'block';
-    const container = document.getElementById('review-list');
-    if (cafeReviewData) {
-      container.innerHTML = await renderReviewList(cafeReviewData);
-      await setReviewImageBlobs();
-      attachMoreButtonEvent();
-    } else {
-      container.innerHTML = '데이터가 없습니다.';
-    }
-  }
-}
-
 function renderOverview(data) {
   return `
     <div id="overview" class="tab-content active">
@@ -468,7 +429,8 @@ function renderOperationTimes(operationTimes) {
   });
 }
 
-async function renderReviewList(totalReviewDTOList) {
+// renderReviewList 함수 수정
+async function renderReviewList(totalReviewDTOList, showMoreButton = true) {
   function renderStars(score) {
     let stars = '';
     for (let i = 1; i <= 5; i++) {
@@ -481,36 +443,33 @@ async function renderReviewList(totalReviewDTOList) {
     return isoString ? isoString.slice(0, 10) : '';
   }
 
-  return totalReviewDTOList.map(review => {
-        // 프로필 이미지
-        const userImg = review.userImage
-            ? (review.userImage.startsWith('/api/common')
-                ? '/images/common/loading.gif' // 로딩 이미지
-                : review.userImage)
-            : '/images/cafe/SampleProfile.png';
-        const userImgDataSrc = review.userImage && review.userImage.startsWith(
-            '/api/common')
-            ? `data-src="${review.userImage}"`
-            : '';
+  const reviewsHtml = totalReviewDTOList.map(review => {
+    // 프로필 이미지
+    const userImg = review.userImage
+        ? (review.userImage.startsWith('/api/common')
+            ? '/images/common/loading.gif' // 로딩 이미지
+            : review.userImage)
+        : '/images/cafe/SampleProfile.png';
+    const userImgDataSrc = review.userImage && review.userImage.startsWith(
+        '/api/common')
+        ? `data-src="${review.userImage}"`
+        : '';
 
-        // 리뷰 이미지들
-        let reviewImagesHtml = '';
-        if (Array.isArray(review.reviewImage) && review.reviewImage.length > 0) {
-          reviewImagesHtml =
-              `<div class="review-images">` +
-              review.reviewImage.map(img =>
-                  img.image && img.image.startsWith('/images/cafe')
-                      ? `<img class="review-image" src="/images/common/loading.gif" data-src="${img.image}" alt="${img.reviewImageId}">`
-                      : `<img class="review-image" src="/images/cafe/menuDefault.png" alt="${img.reviewImageId}">`
-              ).join('') +
-              `</div>`;
-        }
+    // 리뷰 이미지들
+    let reviewImagesHtml = '';
+    if (Array.isArray(review.reviewImage) && review.reviewImage.length > 0) {
+      reviewImagesHtml =
+          `<div class="review-images">` +
+          review.reviewImage.map(img =>
+              img.image && img.image.startsWith('/images/cafe')
+                  ? `<img class="review-image" src="/images/common/loading.gif" data-src="${img.image}" alt="${img.reviewImageId}">`
+                  : `<img class="review-image" src="/images/cafe/menuDefault.png" alt="${img.reviewImageId}">`
+          ).join('') +
+          `</div>`;
+    }
 
-        return `
+    return `
       <div class="review-item">
-        <a class="review-delete-btn"
-           href="/cafe-detail?deleteReviewId=${review.reviewDTO.reviewId}"
-           alt="리뷰삭제">🗑️</a>
         <div class="review-header">
           <img class="reviewer-avatar"
                src="${userImg}" ${userImgDataSrc}
@@ -529,8 +488,105 @@ async function renderReviewList(totalReviewDTOList) {
         ${reviewImagesHtml}
       </div>
     `;
-      }).join('') +
-      `<button class="more-button">더보기</button>`;
+  }).join('');
+
+  // 더보기 버튼을 조건부로 추가
+  const moreButtonHtml = showMoreButton
+      ? `<button class="more-button">더보기</button>` : '';
+
+  return reviewsHtml + moreButtonHtml;
+}
+
+// showTab 함수의 reviews 부분 수정
+async function showTab(tab) {
+  // 모든 탭 컨텐츠 숨김
+  document.querySelectorAll('.tab-content').forEach(div => {
+    div.style.display = 'none';
+  });
+
+  if (tab === 'overview') {
+    document.getElementById('overviewTab').style.display = 'block';
+    const container = document.getElementById('cafeContent');
+    if (cafeOverviewData) {
+      container.innerHTML = renderOverview(cafeOverviewData);
+      updateTodayHours(cafeOverviewData.operationTimes);
+      renderOperationTimes(cafeOverviewData.operationTimes);
+      setupOverviewEventListeners();
+    } else {
+      container.innerHTML = '데이터가 없습니다.';
+    }
+  } else if (tab === 'menu') {
+    document.getElementById('menuTab').style.display = 'block';
+    const container = document.getElementById('menu-list');
+    if (cafeMenuData) {
+      renderMenuList(cafeMenuData);
+    } else {
+      container.innerHTML = '데이터가 없습니다.';
+    }
+  } else if (tab === 'reviews') {
+    reviewPage = 1;
+    document.getElementById('reviewTab').style.display = 'block';
+    const container = document.getElementById('review-list');
+    if (cafeReviewData) {
+      // 리뷰 개수에 따라 더보기 버튼 표시 여부 결정
+      const showMoreButton = cafeReviewData.length >= 2;
+      container.innerHTML = await renderReviewList(cafeReviewData,
+          showMoreButton);
+      await setReviewImageBlobs();
+
+      // 더보기 버튼이 있을 때만 이벤트 등록
+      if (showMoreButton) {
+        attachMoreButtonEvent();
+      }
+    } else {
+      container.innerHTML = '데이터가 없습니다.';
+    }
+  }
+}
+
+// 더보기 버튼 클릭 핸들러 수정
+async function handleMoreButtonClick(e) {
+  const button = e.target;
+  try {
+    const response = await axios.get(
+        rootUrl + `/api/cafe/${cafeId}/reviews/` + reviewPage);
+    const reviewData = response.data;
+
+    // 기존 더보기 버튼 제거
+    button.remove();
+    console.log("더보기 버튼 실행");
+
+    // 새로 가져온 리뷰 개수에 따라 더보기 버튼 표시 여부 결정
+    const showMoreButton = reviewData.totalReviewDTOList.length >= 2;
+
+    // 새 리뷰 추가
+    const container = document.getElementById('review-list');
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = await renderReviewList(reviewData.totalReviewDTOList,
+        showMoreButton);
+
+    // 임시 div에서 더보기 버튼 제거 (나중에 조건부로 추가하기 위해)
+    const newButton = tempDiv.querySelector('.more-button');
+    if (newButton) {
+      newButton.remove();
+    }
+
+    // 새 리뷰 내용만 추가
+    container.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
+
+    // 조건부로 새 더보기 버튼 추가
+    if (showMoreButton) {
+      container.insertAdjacentHTML('beforeend',
+          '<button class="more-button">더보기</button>');
+      attachMoreButtonEvent(); // 재귀 호출
+    }
+
+    await setReviewImageBlobs();
+    reviewPage++;
+
+  } catch (error) {
+    console.error('리뷰 더보기 실패:', error);
+  }
 }
 
 async function setReviewImageBlobs() {
@@ -558,42 +614,6 @@ function attachMoreButtonEvent() {
   if (moreButton && !moreButton.hasAttribute('data-event-added')) {
     moreButton.setAttribute('data-event-added', 'true');
     moreButton.addEventListener('click', handleMoreButtonClick);
-  }
-}
-
-// 더보기 버튼 클릭 핸들러
-async function handleMoreButtonClick(e) {
-  const button = e.target;
-  try {
-    const response = await axios.get(
-        rootUrl + `/api/cafe/${cafeId}/reviews/` + reviewPage);
-    const reviewData = response.data;
-
-    // 기존 더보기 버튼 제거
-    button.remove();
-    console.log("더보기 버튼 실행");
-
-    // 새 리뷰 추가 (더보기 버튼 제외)
-    const container = document.getElementById('review-list');
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = renderReviewList(reviewData.totalReviewDTOList);
-    const newButton = tempDiv.querySelector('.more-button');
-    if (newButton) {
-      newButton.remove();
-    }
-
-    container.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
-
-    // 새 더보기 버튼 추가 및 이벤트 재등록
-    container.insertAdjacentHTML('beforeend',
-        '<button class="more-button">더보기</button>');
-    attachMoreButtonEvent(); // 재귀 호출
-
-    await setReviewImageBlobs();
-    reviewPage++;
-
-  } catch (error) {
-    console.error('리뷰 더보기 실패:', error);
   }
 }
 
