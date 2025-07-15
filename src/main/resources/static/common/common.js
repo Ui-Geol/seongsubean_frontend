@@ -67,7 +67,7 @@ async function isMine(email) {
     return false;
   }
   try {
-    const response = await axios.get(rootUrl + '/api/account/getEmail', {
+    const response = await axios.get(rootUrl + '/api/account/email', {
       headers: {'Authorization': `${token}`}
     });
     return response.data === email;
