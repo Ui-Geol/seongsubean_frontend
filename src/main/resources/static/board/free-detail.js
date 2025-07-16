@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('delete-btn')?.addEventListener('click', deleteHandler);
     document.getElementById('edit-btn')?.addEventListener('click', () => {
         if (freeBoardId) {
-            window.location.href = rootUrl+`/board/free-post.html?id=${freeBoardId}`;
+            window.location.href = `/board/free-post.html?id=${freeBoardId}`;
         }
     });
 
