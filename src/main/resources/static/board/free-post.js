@@ -113,11 +113,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             const result = response.data;
             if (freeBoardId && result.updated) {
                 alert('게시글이 수정되었습니다!');
-                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                const detailUrl = `/board/free-detail.html?id=${freeBoardId}`;
                 window.location.href = detailUrl;
             } else if (!freeBoardId && result.success) {
                 alert('게시글이 등록되었습니다!');
-                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                const detailUrl = `/board/free-list.html`;
                 window.location.href = detailUrl;
             } else {
                 alert('처리에 실패했습니다.');
