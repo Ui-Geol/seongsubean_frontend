@@ -96,9 +96,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function deleteHandler() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
-
+    const token = localStorage.getItem("auth");
     try {
-        const res = await axios.delete(`/api/freeboards/detail/${freeBoardId}`);
+        const res = await axios.delete(rootUrl+`/api/${freeBoardId}`,{
+            headers : { Authorization: `Bearer ${token}`}
+        });
         if (res.data.deleted) {
             alert("삭제되었습니다.");
             window.location.href = `/board/free-list.html?ts=${Date.now()}`;
