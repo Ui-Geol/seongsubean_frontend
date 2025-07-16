@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const img = document.createElement("img");
       img.src = imgName.startsWith('http')
           ? imgName
-          : `${rootUrl}/images/cafe/${imgName}`;
+          : `${rootUrl}+${imgName}`;
 
       img.alt = '게시글 이미지';
       img.classList.add('post-image');

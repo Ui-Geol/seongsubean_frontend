@@ -87,7 +87,7 @@ function renderReportList() {
     };
 
     const imageUrl = item.thumbnailImage?.trim()
-        ? rootUrl + `/images/cafe/${item.thumbnailImage}`
+        ? rootUrl + `${item.thumbnailImage}`
         : '/images/board/report/default.png';
 
     article.innerHTML = `
