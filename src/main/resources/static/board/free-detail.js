@@ -4,10 +4,13 @@ let freeBoardId = null;
 let loginUserEmail = '';
 
 async function fetchLoginEmail() {
+    const token = localStorage.getItem("auth");
     try {
-        const res = await axios.get(rootUrl+'/api/freeboards/auth/email');
-        if (res.data.success) {
-            loginUserEmail = res.data.email;
+        const res = await axios.get(rootUrl+'/api/account/email',{
+            headers : { Authorization: `Bearer ${token}`}
+        });
+        if (res) {
+            loginUserEmail = res.data;
         }
     } catch (err) {
         console.warn("로그인 이메일 조회 실패:", err);
@@ -30,7 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await axios.get(rootUrl+`/api/freeboards/detail/${freeBoardId}`);
         const data = res.data;
         await fetchLoginEmail();
-
+        console.log(loginUserEmail);
+        console.log(data.email);
         if (loginUserEmail === data.email) {
             document.getElementById('edit-btn').style.display = 'inline-block';
             document.getElementById('delete-btn').style.display = 'inline-block';
