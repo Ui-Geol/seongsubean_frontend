@@ -1,7 +1,6 @@
 import { loadLayout, rootUrl } from '/common/common.js';
 document.addEventListener("DOMContentLoaded", async () => {
     loadLayout();
-    const searchBtn = document.querySelector("#searchButton");
     // 로그인한 경우만 '새 글쓰기' 버튼 표시
     const token = localStorage.getItem('auth');
     if (token) {
@@ -67,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function fetchPosts(page) {
     let url = rootUrl+`/api/freeboards/list/${page}/${pageSize}`;
     if (searchKeyword && searchType) {
-        url = rootUrl+`/api/freeboards/search?page=${page}&size=${pageSize}&type=${searchType}&keyword=${encodeURIComponent(searchKeyword)}`;
+        url = rootUrl+`/api/freeboards/search/${searchType}/${encodeURIComponent(searchKeyword)}/${page}/${pageSize}`;
     }
 
     try {
