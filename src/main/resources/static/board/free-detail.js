@@ -4,10 +4,13 @@ let freeBoardId = null;
 let loginUserEmail = '';
 
 async function fetchLoginEmail() {
+    const token = localStorage.getItem("auth");
     try {
-        const res = await axios.get(rootUrl+'/api/freeboards/auth/email');
-        if (res.data.success) {
-            loginUserEmail = res.data.email;
+        const res = await axios.get(rootUrl+'/api/account/email',{
+            headers : { Authorization: `Bearer ${token}`}
+        });
+        if (res) {
+            loginUserEmail = res.data;
         }
     } catch (err) {
         console.warn("로그인 이메일 조회 실패:", err);
@@ -22,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('delete-btn')?.addEventListener('click', deleteHandler);
     document.getElementById('edit-btn')?.addEventListener('click', () => {
         if (freeBoardId) {
-            window.location.href = rootUrl+`/board/free-post.html?id=${freeBoardId}`;
+            window.location.href = `/board/free-post.html?id=${freeBoardId}`;
         }
     });
 
@@ -30,7 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await axios.get(rootUrl+`/api/freeboards/detail/${freeBoardId}`);
         const data = res.data;
         await fetchLoginEmail();
-
+        console.log(loginUserEmail);
+        console.log(data.email);
         if (loginUserEmail === data.email) {
             document.getElementById('edit-btn').style.display = 'inline-block';
             document.getElementById('delete-btn').style.display = 'inline-block';
@@ -92,9 +96,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function deleteHandler() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
-
+    const token = localStorage.getItem("auth");
     try {
-        const res = await axios.delete(`/api/freeboards/detail/${freeBoardId}`);
+        const res = await axios.delete(rootUrl+`/api/${freeBoardId}`,{
+            headers : { Authorization: `Bearer ${token}`}
+        });
         if (res.data.deleted) {
             alert("삭제되었습니다.");
             window.location.href = `/board/free-list.html?ts=${Date.now()}`;

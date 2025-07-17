@@ -28,10 +28,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         counter.style.color = (length > 2000) ? '#dc3545' : '#666';
     });
 
-    const pathParts = window.location.pathname.split('/');
-    const last = pathParts[pathParts.length - 1];
-    const isEdit = /^\d+$/.test(last);
-    const freeBoardId = isEdit ? parseInt(last, 10) : null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const freeBoardId = urlParams.has("id") ? parseInt(urlParams.get("id"), 10) : null;
+    const isEdit = freeBoardId !== null;
 
     const form = document.getElementById('free-form');
     const titleInput = document.getElementById('title');
@@ -44,10 +43,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             window.location.href = '/board/freeboards/free-list.html';
         });
     }
-
     if (isEdit) {
         try {
-            const res = await axios.get(rootUrl+`/api/freeboards/${freeBoardId}`);
+            const res = await axios.get(rootUrl+`/api/freeboards/detail/${freeBoardId}`);
             const data = res.data;
             titleInput.value = data.title;
             editor.setHTML(data.content);
@@ -89,7 +87,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert('이미지는 최대 5개까지만 업로드할 수 있습니다.');
             return;
         }
-
         const formData = new FormData(form);
         const url = freeBoardId ? rootUrl+`/api/freeboards/post/${freeBoardId}` : rootUrl+'/api/freeboards';
         const method = freeBoardId ? 'put' : 'post';
@@ -106,18 +103,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                     content: contentHtml
                 },
                 headers: {
-                    Authorization: token
+                    Authorization: `Bearer ${token}`
                 }
             });
-
             const result = response.data;
             if (freeBoardId && result.updated) {
                 alert('게시글이 수정되었습니다!');
-                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                const detailUrl = `/board/free-detail.html?id=${freeBoardId}`;
                 window.location.href = detailUrl;
             } else if (!freeBoardId && result.success) {
                 alert('게시글이 등록되었습니다!');
-                const detailUrl = `/board/freeboards/free-detail.html?id=${freeBoardId}`;
+                const detailUrl = `/board/free-list.html`;
                 window.location.href = detailUrl;
             } else {
                 alert('처리에 실패했습니다.');
