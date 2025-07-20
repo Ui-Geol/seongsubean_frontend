@@ -11,7 +11,7 @@
   </parent>
   <groupId>com.oopsw</groupId>
   <artifactId>seongsubean_frontend</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>v1</version>
   <name>seongsubean_frontend</name>
   <description>seongsubean_frontend</description>
   <url/>

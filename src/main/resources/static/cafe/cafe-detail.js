@@ -16,6 +16,7 @@ let cafeReviewData = null;
 
 let reviewPage = 1;
 let currentMenuIdToDelete = null; // 삭제할 메뉴 ID 저장
+let currentReviewIdToDelete = null; // 삭제할 리뷰 ID 저장
 
 // 현재 브라우저 주소의 쿼리스트링 부분을 가져옴
 const params = new URLSearchParams(window.location.search);
@@ -429,8 +430,27 @@ function renderOperationTimes(operationTimes) {
   });
 }
 
-// renderReviewList 함수 수정
+// renderReviewList 함수 수정 (리뷰 삭제 버튼 추가)
 async function renderReviewList(totalReviewDTOList, showMoreButton = true) {
+  const reviewListEl = document.getElementById('review-list');
+  reviewListEl.innerHTML = ''; // 기존 내용 제거
+
+  const owner = await axios.get(rootUrl + `/api/cafe/${cafeId}/cafeDTO`);
+  const isOwner = await isMine(owner.data.cafeDTO.email);
+
+  // 리뷰 추가 헤더 표시/숨김
+  if (isOwner) {
+    document.getElementById("addReviewHeader").style.display = 'none';
+  } else {
+    // 리뷰 추가 버튼에 review-form.html로 이동하는 이벤트 추가
+    const addReviewBtn = document.getElementById('addReviewBtn');
+    if (addReviewBtn) {
+      addReviewBtn.addEventListener('click', () => {
+        window.location.href = `/cafe/review-form.html?cafeId=${cafeId}`;
+      });
+    }
+  }
+
   function renderStars(score) {
     let stars = '';
     for (let i = 1; i <= 5; i++) {
@@ -443,7 +463,11 @@ async function renderReviewList(totalReviewDTOList, showMoreButton = true) {
     return isoString ? isoString.slice(0, 10) : '';
   }
 
-  const reviewsHtml = totalReviewDTOList.map(review => {
+  // 각 리뷰에 대해 개별적으로 소유권 확인
+  const reviewsHtml = await Promise.all(totalReviewDTOList.map(async review => {
+    // 현재 사용자가 이 리뷰의 작성자인지 확인
+    const isMyReview = await isMine(review.reviewDTO.email);
+
     // 프로필 이미지
     const userImg = review.userImage
         ? (review.userImage.startsWith('/api/common')
@@ -468,6 +492,11 @@ async function renderReviewList(totalReviewDTOList, showMoreButton = true) {
           `</div>`;
     }
 
+    // 내 리뷰인 경우 삭제 버튼 표시
+    const deleteButtonHtml = isMyReview ? `
+      <button class="review-delete-btn" data-review-id="${review.reviewDTO.reviewId}" title="리뷰삭제" type="button">🗑️</button>
+    ` : '';
+
     return `
       <div class="review-item">
         <div class="review-header">
@@ -480,22 +509,49 @@ async function renderReviewList(totalReviewDTOList, showMoreButton = true) {
               ${renderStars(review.reviewDTO.starScore)}
             </div>
           </div>
-          <div class="review-date">
-            ${formatDate(review.reviewDTO.reviewDate)}
+          <div class="review-actions">
+            <div class="review-date">
+              ${formatDate(review.reviewDTO.reviewDate)}
+            </div>
+            ${deleteButtonHtml}
           </div>
         </div>
         <div class="review-text">${review.reviewDTO.reviewContents}</div>
         ${reviewImagesHtml}
       </div>
     `;
-  }).join('');
+  }));
 
   // 더보기 버튼을 조건부로 추가
   const moreButtonHtml = showMoreButton
       ? `<button class="more-button">더보기</button>` : '';
 
-  return reviewsHtml + moreButtonHtml;
+  const finalHtml = reviewsHtml.join('') + moreButtonHtml;
+
+  // DOM에 추가
+  reviewListEl.innerHTML = finalHtml;
+
+  // 리뷰 삭제 버튼들에 이벤트 리스너 추가
+  const deleteButtons = reviewListEl.querySelectorAll('.review-delete-btn');
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const reviewId = button.getAttribute('data-review-id');
+      currentReviewIdToDelete = reviewId;
+      // 리뷰 삭제 모달 열기
+      openModal('/cafe/review-delete-modal.html');
+    });
+  });
+
+  return finalHtml;
 }
+
+// 리뷰 삭제 함수 (전역으로 노출)
+window.deleteReview = function (reviewId) {
+  currentReviewIdToDelete = reviewId;
+  // 리뷰 삭제 모달 열기
+  openModal('/cafe/review-delete-modal.html');
+};
 
 // showTab 함수의 reviews 부분 수정
 async function showTab(tab) {
@@ -530,8 +586,7 @@ async function showTab(tab) {
     if (cafeReviewData) {
       // 리뷰 개수에 따라 더보기 버튼 표시 여부 결정
       const showMoreButton = cafeReviewData.length >= 2;
-      container.innerHTML = await renderReviewList(cafeReviewData,
-          showMoreButton);
+      await renderReviewList(cafeReviewData, showMoreButton);
       await setReviewImageBlobs();
 
       // 더보기 버튼이 있을 때만 이벤트 등록
@@ -561,18 +616,11 @@ async function handleMoreButtonClick(e) {
 
     // 새 리뷰 추가
     const container = document.getElementById('review-list');
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = await renderReviewList(reviewData.totalReviewDTOList,
-        showMoreButton);
-
-    // 임시 div에서 더보기 버튼 제거 (나중에 조건부로 추가하기 위해)
-    const newButton = tempDiv.querySelector('.more-button');
-    if (newButton) {
-      newButton.remove();
-    }
+    const newReviewsHtml = await renderReviewList(reviewData.totalReviewDTOList,
+        false);
 
     // 새 리뷰 내용만 추가
-    container.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
+    container.insertAdjacentHTML('beforeend', newReviewsHtml);
 
     // 조건부로 새 더보기 버튼 추가
     if (showMoreButton) {
@@ -638,7 +686,6 @@ function setupEditButton() {
   editButton.addEventListener('click', function () {
     location.href = `/cafe/cafe-registration.html?cafeId=` + cafeId;
   });
-
 }
 
 function setupModalEventHandlers() {
@@ -652,6 +699,9 @@ function setupModalEventHandlers() {
     if (buttonType.includes('menu-delete-btn')) {
       console.log('메뉴 삭제 실행');
       handleMenuDelete();
+    } else if (buttonType.includes('review-delete-btn')) {
+      console.log('리뷰 삭제 실행');
+      handleReviewDelete();
     } else if (buttonType.includes('cafe-delete-btn')) {
       console.log('카페 삭제 실행');
       handleCafeDelete();
@@ -741,6 +791,96 @@ async function handleMenuDelete() {
   }
 }
 
+// 리뷰 삭제 처리
+async function handleReviewDelete() {
+  if (!currentReviewIdToDelete) {
+    console.error('삭제할 리뷰 ID가 없습니다.');
+    return;
+  }
+
+  try {
+    // 로딩 표시
+    showLoadingInModal();
+
+    // TotalReviewDTO 형태로 삭제 요청 데이터 생성
+    const deleteData = {
+      userNickname: null, // 서버에서 확인
+      userImage: null, // 서버에서 확인
+      reviewDTO: {
+        reviewId: currentReviewIdToDelete
+      },
+      reviewImage: []
+    };
+
+    console.log('=== 리뷰 삭제 요청 ===');
+    console.log('삭제할 리뷰 ID:', currentReviewIdToDelete);
+    console.log('요청 데이터:', deleteData);
+
+    const response = await axios({
+      method: 'DELETE',
+      url: rootUrl + `/api/cafe/${cafeId}/reviews`,
+      data: deleteData,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': localStorage.getItem('auth')
+      }
+    });
+
+    console.log('=== 리뷰 삭제 응답 ===');
+    console.log('Status:', response.status);
+
+    if (response.status === 204) {
+      // 리뷰 목록 다시 로드하여 실시간 업데이트
+      const reviewRes = await axios.get(
+          rootUrl + `/api/cafe/${cafeId}/reviews/0`);
+      cafeReviewData = reviewRes.data.totalReviewDTOList;
+
+      // 리뷰 탭이 현재 활성화되어 있다면 다시 렌더링
+      const reviewTab = document.getElementById('reviewTab');
+      if (reviewTab && reviewTab.style.display !== 'none') {
+        reviewPage = 1; // 페이지 초기화
+        await renderReviewList(cafeReviewData, cafeReviewData.length >= 2);
+        await setReviewImageBlobs();
+
+        // 더보기 버튼 이벤트 재등록
+        if (cafeReviewData.length >= 2) {
+          attachMoreButtonEvent();
+        }
+      }
+
+      // 카페 헤더의 리뷰 수도 업데이트
+      setCafeHeader();
+
+      closeModal();
+      alert('리뷰가 성공적으로 삭제되었습니다.');
+    } else {
+      throw new Error('리뷰 삭제 요청이 실패했습니다.');
+    }
+
+  } catch (error) {
+    console.error('=== 리뷰 삭제 실패 ===');
+    console.error(error);
+
+    let errorMessage = '리뷰 삭제 중 오류가 발생했습니다.';
+    if (error.response) {
+      console.error('서버 오류:', error.response.status, error.response.data);
+      errorMessage = error.response.data?.message ||
+          error.response.data?.error ||
+          error.response.data ||
+          `HTTP ${error.response.status} 에러가 발생했습니다.`;
+    } else if (error.request) {
+      console.error('네트워크 오류:', error.request);
+      errorMessage = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
+    }
+
+    alert(errorMessage);
+    closeModal();
+
+  } finally {
+    currentReviewIdToDelete = null; // 초기화
+  }
+}
+
 // 모달에 로딩 표시 (선택사항)
 function showLoadingInModal() {
   const modalContainer = document.getElementById('modalContainer');
@@ -762,4 +902,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   await initializeModal();
 
   setupModalEventHandlers();
+
+  // 수정/삭제 버튼 이벤트 설정
+  setupEditButton();
+  setupDeleteButton();
 });
