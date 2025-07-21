@@ -275,6 +275,33 @@ body {
   border-bottom: 1px solid #e9ecef;
 }
 
+.review-btn-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding-right: 60px;
+}
+
+.add-review-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.add-reivew-btn:hover {
+  background-color: #0056b3;
+}
+
+
 .menu-item:last-child {
   border-bottom: none;
 }
