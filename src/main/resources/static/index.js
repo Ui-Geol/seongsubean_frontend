@@ -1,5 +1,24 @@
 import {rootUrl,common,loadLayout} from '/common/common.js';
 
+
+(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  if (token) {
+    // 1. 토큰을 localStorage에 저장
+    localStorage.auth = "Bearer " + token;
+
+    // 2. URL에서 token을 제거하고 주소 정리
+    params.delete("token");
+    const newUrl = window.location.origin + window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, document.title, newUrl);
+
+    // 3. 페이지를 새로고침 (토큰 기반 요청 반영)
+    window.location.reload();
+  }
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   loadLayout(); // ✅ header/footer 삽입
 });

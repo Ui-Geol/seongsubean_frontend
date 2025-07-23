@@ -13,9 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
   .then(res => {
     const {nickName, image, isOauth} = res.data;
     if (!image) {
-      userImage.src = '/images/account/default.png';
-    }else {
-      userImage.src = image;
+      userImage.src = '/images/account/default.png';   // 기본 프로필 이미지
+    } else {
+      userImage.src = `/images/account/${image}`;      // 저장된 유저 이미지
     }
     userNickname.textContent = nickName;
 
@@ -33,28 +33,33 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 });
 
-document.getElementById('profile-upload').addEventListener('change', function () {
-  const file = this.files[0];
-  if (!file) return;
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("profile-upload").addEventListener("change", async function () {
+    const file = this.files[0];
+    if (!file) return;
 
-  const formData = new FormData();
-  formData.append("image", file);
+    const fileName = file.name.replaceAll(' ', '_');
+    const token = localStorage.getItem("auth"); // 반드시 여기서 설정
 
-  axios.put(rootUrl + "/api/account/profile/image", formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      Authorization: `Bearer ${token}`
+    try {
+      const res = await axios.put(rootUrl + "/api/account/profile/image", { image: fileName }, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        }
+      });
+
+      // 미리보기 업데이트
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('profile-img').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      alert(res.data.message);
+    } catch (err) {
+      console.error("업로드 실패:", err);
+      alert("이미지 저장 실패");
     }
-  })
-  .then(response => {
-    // 미리보기 이미지 변경
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      document.getElementById('profile-img').src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  })
-  .catch(() => {
-    alert("업로드 실패");
   });
 });
