@@ -1,4 +1,4 @@
-import { loadLayout, rootUrl } from '/common/common.js';
+import { loadLayout, rootUrl, initializeModal } from '/common/common.js';
 
 let freeBoardId = null;
 let loginUserEmail = '';
@@ -19,6 +19,7 @@ async function fetchLoginEmail() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     loadLayout();
+    await initializeModal();
     const urlParams = new URLSearchParams(window.location.search);
     freeBoardId = urlParams.get("id");
 
@@ -171,16 +172,29 @@ async function loadComments() {
 document.querySelector(".comment-submit")?.addEventListener("click", async () => {
     const content = document.querySelector(".comment-input").value.trim();
     if (!content) return alert("댓글을 입력해주세요.");
-
-    const formData = new FormData();
-    formData.append("comment", content);
-    formData.append("freeBoardId", freeBoardId);
+    const token = localStorage.getItem("auth");
 
     try {
-        const res = await axios.post(rootUrl+"/api/freeboards/comment", formData);
+        const res = await axios.post(
+            rootUrl + "/api/freeboards/comment",
+            {
+                content: content,
+                freeBoardId: freeBoardId
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
         if (res.data.success) {
-            alert("댓글이 등록되었습니다.");
-            location.reload();
+            openModal("/board/modal-success.html");
+
+            document.addEventListener("modalConfirm", () => {
+                location.reload();
+            }, { once: true }); // 한 번만 실행되도록
         } else {
             alert(res.data.message || "등록 실패");
         }
