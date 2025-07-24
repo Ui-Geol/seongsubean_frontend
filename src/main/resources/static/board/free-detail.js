@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         avatarDiv.innerHTML = `<img src="${currentUserProfileImage}" class="avatar-img">`;
     }
 
+
     const urlParams = new URLSearchParams(window.location.search);
     freeBoardId = urlParams.get("id");
 
@@ -253,6 +254,7 @@ document.querySelector(".comment-submit")?.addEventListener("click", async () =>
             });
         }
         else {
+
             alert(res.data.message || "등록 실패");
         }
     } catch (err) {
