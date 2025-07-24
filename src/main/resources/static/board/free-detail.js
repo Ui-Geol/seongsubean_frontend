@@ -1,4 +1,5 @@
 import { loadLayout, rootUrl, initializeModal } from '/common/common.js';
+import {showBoardModal} from "/board/board-modal.js";
 
 let freeBoardId = null;
 let loginUserEmail = '';
@@ -20,6 +21,32 @@ async function fetchLoginEmail() {
 document.addEventListener('DOMContentLoaded', async () => {
     loadLayout();
     await initializeModal();
+    let currentUserProfileImage =  'http://127.0.0.1:8880/images/account/default.png';
+
+
+    try {
+        const token = localStorage.getItem("auth");
+        const res = await axios.get(rootUrl + '/api/account/auth', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const imagePath = res.data.image; // 예: "/account/1989sd.jpg"
+
+        if (imagePath) {
+            currentUserProfileImage = imagePath.startsWith("/")
+                ? rootUrl + imagePath
+                : rootUrl + "/" + imagePath;
+        }
+    } catch (err) {
+        console.warn("댓글 입력창 프로필 이미지 로딩 실패:", err);
+    }
+
+    const avatarDiv = document.querySelector('.comment-form .comment-avatar');
+    if (avatarDiv) {
+        avatarDiv.innerHTML = `<img src="${currentUserProfileImage}" class="avatar-img">`;
+    }
+
+
     const urlParams = new URLSearchParams(window.location.search);
     freeBoardId = urlParams.get("id");
 
@@ -72,20 +99,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const avatar = document.getElementById('author-avatar');
-        let profileImageUrl = rootUrl+'/images/board/SampleProfile.png';
+        let authorProfileImageUrl = 'http://127.0.0.1:8880/images/account/default.png';
 
-        if (data.profileImage) {
-            try {
-                const imageRes = await axios.get(rootUrl+`/api/common${data.profileImage.startsWith('/') ? '' : '/'}${data.profileImage}`, {
-                    responseType: 'blob'
-                });
-                profileImageUrl = URL.createObjectURL(imageRes.data);
-            } catch (err) {
-                console.warn('작성자 프로필 이미지 로딩 실패:', err);
-            }
+        try {
+            const res = await axios.get(rootUrl + `/api/board/email?email=${encodeURIComponent(data.email)}`);
+            authorProfileImageUrl = res.data.image || authorProfileImageUrl;
+        } catch (err) {
+            console.warn("작성자 프로필 이미지 로딩 실패:", err);
         }
 
-        avatar.innerHTML = `<img src="${profileImageUrl}" class="avatar-img">`;
+        avatar.innerHTML = `<img src="${authorProfileImageUrl}" class="avatar-img">`;
+
 
     } catch (err) {
         console.error("불러오기 실패:", err);
@@ -96,22 +120,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function deleteHandler() {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
-    const token = localStorage.getItem("auth");
-    try {
-        const res = await axios.delete(rootUrl+`/api/${freeBoardId}`,{
-            headers : { Authorization: `Bearer ${token}`}
-        });
-        if (res.data.deleted) {
-            alert("삭제되었습니다.");
-            window.location.href = `/board/free-list.html?ts=${Date.now()}`;
-        } else {
-            alert("삭제에 실패했습니다.");
+    showBoardModal({
+        type: 'post-delete',
+        onConfirm: async () => {
+            const token = localStorage.getItem("auth");
+            try {
+                const res = await axios.delete(rootUrl + `/api/${freeBoardId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (res.data.deleted) {
+                    showBoardModal({
+                        type: 'post-create', // 삭제 후 완료 메시지용으로 임시 사용
+                        title: '삭제 완료',
+                        message: '게시글이 삭제되었습니다.',
+                        onConfirm: () => {
+                            window.location.href = `/board/free-list.html?ts=${Date.now()}`;
+                        }
+                    });
+                } else {
+                    alert("삭제에 실패했습니다.");
+                }
+            } catch (err) {
+                console.error("삭제 오류:", err);
+                alert("오류 발생");
+            }
         }
-    } catch (err) {
-        console.error("삭제 오류:", err);
-        alert("오류 발생");
-    }
+    });
 }
 
 function formatDate(dateStr) {
@@ -119,13 +154,20 @@ function formatDate(dateStr) {
     return date.toLocaleDateString("ko-KR");
 }
 
-// 💬 댓글 처리
+// 댓글 처리
 async function loadComments() {
     let currentUserEmail = '';
+    const token = localStorage.getItem("auth");
+
+    // JWT refact
     try {
-        const userRes = await axios.get(rootUrl+'/api/freeboards/auth/email');
-        currentUserEmail = userRes.data.email;
-    } catch {}
+        const userRes = await axios.get(rootUrl+'/api/account/email', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        currentUserEmail = userRes.data;
+    } catch (err) {
+        console.warn("로그인 이메일 조회 실패:", err);
+    }
 
     try {
         const res = await axios.get(rootUrl+`/api/freeboards/comment/${freeBoardId}`);
@@ -137,9 +179,10 @@ async function loadComments() {
         comments.forEach(comment => {
             const item = document.createElement("div");
             item.className = "comment-item";
+            const isOwner = comment.email === currentUserEmail;
             item.innerHTML = `
               <div class="comment-avatar">
-                <img src="${comment.profileImage || rootUrl+'/images/board/SampleProfile.png'}" class="avatar-img">
+                <img src="${comment.profileImage || 'http://127.0.0.1:8880/images/account/default.png'}" class="avatar-img">
               </div>
               <div class="comment-content">
                 <div class="comment-header">
@@ -147,10 +190,11 @@ async function loadComments() {
                   <span class="comment-date">${formatDate(comment.createdDate)}</span>
                 </div>
                 <div class="comment-text">${comment.content}</div>
-                ${comment.email === currentUserEmail ? `<div class="comment-actions">
+                ${isOwner ? `<div class="comment-actions">
                   <button class="comment-delete-btn" data-id="${comment.freeBoardCommentId}">삭제하기</button></div>` : ""}
               </div>
             `;
+
             commentList.appendChild(item);
         });
 
@@ -158,9 +202,23 @@ async function loadComments() {
             btn.addEventListener("click", async () => {
                 const id = btn.dataset.id;
                 if (confirm("댓글을 삭제하시겠습니까?")) {
-                    await axios.delete(rootUrl+`/api/freeboards/comment/${id}`);
-                    alert("댓글이 삭제되었습니다.");
-                    location.reload();
+                    try {
+                        const res = await axios.delete(rootUrl+`/api/freeboards/comment/${id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        if (res.data.success) {
+                            showBoardModal({
+                                type: 'comment-create',
+                                message: '댓글이 삭제되었습니다.',
+                                onConfirm: () => location.reload()
+                            });
+                        } else {
+                            alert("댓글 삭제 실패");
+                        }
+                    } catch (err) {
+                        console.error("댓글 삭제 오류:", err);
+                        alert("오류 발생");
+                    }
                 }
             });
         });
@@ -190,12 +248,13 @@ document.querySelector(".comment-submit")?.addEventListener("click", async () =>
         );
 
         if (res.data.success) {
-            openModal("/board/modal-success.html");
+            showBoardModal({
+                type: 'comment-create',
+                onConfirm: () => location.reload()
+            });
+        }
+        else {
 
-            document.addEventListener("modalConfirm", () => {
-                location.reload();
-            }, { once: true }); // 한 번만 실행되도록
-        } else {
             alert(res.data.message || "등록 실패");
         }
     } catch (err) {

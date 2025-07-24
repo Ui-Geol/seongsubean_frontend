@@ -112,7 +112,20 @@ async function initializeModal() {
   } catch (error) {
     console.error('모달 초기화 실패:', error);
   }
+  if (!document.getElementById('board-modal')) {
+    try {
+      const boardModalRes = await fetch('/board/board-modal.html');
+      if (!boardModalRes.ok) {
+        throw new Error('board-modal.html 파일을 불러올 수 없습니다.');
+      }
+      const boardModalHTML = await boardModalRes.text();
+      document.body.insertAdjacentHTML('beforeend', boardModalHTML);
+    } catch (error) {
+      console.error('board-modal.html 초기화 실패:', error);
+    }
+  }
 }
+
 
 // ✅ 모달 오버레이 클릭 이벤트 설정
 function setupModalOverlayEvent() {

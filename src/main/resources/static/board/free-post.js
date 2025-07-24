@@ -1,7 +1,11 @@
 import { loadLayout, rootUrl } from '/common/common.js';
+import { showBoardModal } from '/board/board-modal.js';
+import {initializeModal} from "/common/common.js";
+
 
 document.addEventListener('DOMContentLoaded', async function () {
     loadLayout();
+    await initializeModal();
     const editor = new toastui.Editor({
         el: document.querySelector('#editor'),
         height: '500px',
@@ -108,16 +112,21 @@ document.addEventListener('DOMContentLoaded', async function () {
             });
             const result = response.data;
             if (freeBoardId && result.updated) {
-                alert('게시글이 수정되었습니다!');
-                const detailUrl = `/board/free-detail.html?id=${freeBoardId}`;
-                window.location.href = detailUrl;
+                showBoardModal({
+                    type: 'post-edit',
+                    onConfirm: () => {
+                        window.location.href = `/board/free-detail.html?id=${freeBoardId}`;
+                    }
+                });
             } else if (!freeBoardId && result.success) {
-                alert('게시글이 등록되었습니다!');
-                const detailUrl = `/board/free-list.html`;
-                window.location.href = detailUrl;
-            } else {
-                alert('처리에 실패했습니다.');
+                showBoardModal({
+                    type: 'post-create',
+                    onConfirm: () => {
+                        window.location.href = `/board/free-list.html`;
+                    }
+                });
             }
+
         } catch (err) {
             console.error('전송 오류', err);
             alert('요청 중 문제가 발생했습니다.');
